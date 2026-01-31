@@ -1,124 +1,88 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 
-# Simulation Constants
+# --- Constants & Environment ---
 G = 6.67408e-11  # m^3/kg/s^2
 G_earth = 9.81  # m/s^2
-t_total = 1000  # s
 r_moon = 1737e3  # m
 m_moon = 7.34767309e22  # kg
 mu = G * m_moon  # m^3/s^2
 
-# Initial Conditions
+# --- Initial Conditions (From Apollo 11 Event B) ---
 r0 = r_moon + 14_878  # m
 dr0 = -1.22  # m/s
-theta0 = 40 * np.pi / 180  # rad
+theta0 = np.radians(40)  # rad
 dtheta0 = -np.sqrt(mu / (r_moon + 14_878)) / (r_moon + 14_878)  # rad/s
 m0 = 15_240  # kg
+m_empty = 4_280  # kg
+Isp = 311  # s
+T_max = 45_000  # N
 
-# Target Conditions
-target_r = r_moon  # m
-target_dr = 0  # m/s
-target_theta = theta0 - 480_000 / r_moon  # rad
-target_dtheta = 0  # rad/s
-
-
-class Lander:
-    def __init__(self, S, Isp, T_max, m_e):
-        self.S = S
-        self.Isp = Isp
-        self.T_max = T_max
-        self.m_e = m_e
-
-    def controller(self, S):
-        r, dr, theta, dtheta, m = S
-        T_max = self.T_max
-        alt = r - r_moon
-
-        # Determine Altitude
-        alt = r - r_moon
-
-        # Determine Angle of Thrust
-        v_theta = dtheta * r
-        gamma = np.arctan2(-v_theta, -dr)
-
-        T, alpha = 0, 0
-        # Phase C
-        if alt > 14_851:
-            T = T_max * 0.6
-            alpha = 90 * np.pi / 180
-        # Phase D
-        elif alt > 13_696:
-            T = T_max * 0.6
-            alpha = 80 * np.pi / 180
-        # Phase E
-        elif alt > 11_948:
-            T = T_max * 0.6
-            alpha = 65 * np.pi / 180
-        return T, alpha
-
-    def dynamics(self, t, S):
-        r, dr, theta, dtheta, m = S
-        T, alpha = self.controller(S)
-
-        # Radial
-        dr = dr
-        ddr = T / m * np.cos(alpha) - mu / r**2 + r * dtheta**2
-        # Angular
-        dtheta = dtheta
-        ddtheta = 1 / r * (T / m * np.sin(alpha) - 2 * dr * dtheta)
-        # Mass
-        dm = -T / (G_earth * self.Isp)
-
-        return [dr, ddr, dtheta, ddtheta, dm]
-
-    def propagate(self, S, duration):
-        def surface_contact(t, S):
-            return S[0] - r_moon
-
-        surface_contact.terminal = True
-        surface_contact.direction = -1
-
-        sol = solve_ivp(
-            lambda t, S: self.dynamics(t, S),
-            (0, duration),
-            self.S,
-            method="RK45",
-            t_eval=np.linspace(0, duration, duration * 10),
-            events=[surface_contact],
-            max_step=1,
-        )
-        return sol
+S0 = [r0, dr0, theta0, dtheta0, m0]
 
 
-# Starting Conditions (Burn Ignition State)
-Apollo = Lander(np.array([r0, dr0, theta0, dtheta0, m0]), 311, 45_000, 4280)
-sol = Apollo.propagate(Apollo.S, t_total)
+def dynamics(t, S, thrust_pct, alpha_deg):
+    r, dr, theta, dtheta, m = S
+
+    # 1. Controller Logic (Functional)
+    alpha = np.radians(alpha_deg)
+    T = T_max * thrust_pct
+
+    # 2. Fuel Guardrail
+    if m <= m_empty:
+        T, dm = 0, 0
+    else:
+        dm = -T / (G_earth * Isp)
+
+    # 3. Equations of Motion
+    ddr = (T / m) * np.cos(alpha) - mu / r**2 + r * dtheta**2
+    ddtheta = (1 / r) * ((T / m) * np.sin(alpha) - 2 * dr * dtheta)
+
+    return [dr, ddr, dtheta, ddtheta, dm]
 
 
-def check_stage(target_time):
+def surface_contact(t, S):
+    return S[0] - r_moon
+
+
+surface_contact.terminal = True
+surface_contact.direction = -1
+
+# --- Parameter Sweep Example ---
+test_throttle = 0.6
+test_alpha = 85.4
+
+sol = solve_ivp(
+    lambda t, S: dynamics(t, S, test_throttle, test_alpha),
+    (0, 1000),
+    S0,
+    method="RK45",
+    events=[surface_contact],
+    max_step=1,
+)
+
+
+# --- Analysis Functions ---
+def check_event(target_time):
     idx = np.argmin(np.abs(sol.t - target_time))
+    r_t, dr_t, theta_t, dtheta_t, m_t = sol.y[:, idx]
+    v_total = np.sqrt(dr_t**2 + (r_t * dtheta_t) ** 2)
 
-    t = sol.t[idx]
-    r = sol.y[0][idx]
-    dr = sol.y[1][idx]
-    theta = sol.y[2][idx]
-    dtheta = sol.y[3][idx]
-
-    alt_m = r - r_moon
-    v_radial = dr
-    v_tangential = r * dtheta
-
-    v_inertial = np.sqrt(v_radial**2 + v_tangential**2)
-
-    print(f"--- Telemetry at T+{target_time}s (Closest match: {t:.2f}s) ---")
-    print(f"Altitude:     {alt_m:.2f} m")
-    print(f"Altitude Rate:   {v_radial:.2f} m/s")
-    print(f"Inertial Velocity: {v_inertial:.2f} m/s")
+    print(f"--- T+{target_time}s Report ---")
+    print(f"Altitude: {r_t - r_moon:.2f} m")
+    print(f"Inertial Velocity: {v_total:.2f} m/s")
+    print(f"Altitude Rate: {dr_t:.2f} m/s")
 
 
-check_stage(4 * 60 + 18)
+check_event(176)
+
 """
+# Target Conditions
+target_r = r_moon # m
+target_dr = 0 # m/s
+target_theta = theta0 - 480_000/r_moon # rad
+target_dtheta = 0 # rad/s
+
 # Final Conditions
 final_r = sol.y[0][-1]
 final_dr = sol.y[1][-1]
