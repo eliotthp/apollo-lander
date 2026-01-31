@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.integrate import solve_ivp
+import matplotlib.pyplot as plt
 
 # Simulation Constants
 G = 6.67408e-11  # m^3/kg/s^2
@@ -12,8 +13,8 @@ mu = G * m_moon  # m^3/s^2
 # Starting Conditions
 r0 = r_moon + 15_000  # m
 dr0 = 0  # m/s
-v0 = np.sqrt(mu / r0)
-theta0 = 0  # rad
+v0 = -np.sqrt(mu / r0)
+theta0 = np.pi / 2  # rad
 dtheta0 = v0 / r0  # rad/s
 
 # Target Conditions
@@ -41,8 +42,12 @@ class Lander:
 
     def controller(self, S):
         r, dr, theta, dtheta, m = S
-        T = self.T_max
-        alpha = 0
+        if theta > 0.1:
+            T = self.T_max
+            alpha = np.pi
+        else:
+            T = 0
+            alpha = 0
 
         return T, alpha
 
@@ -65,16 +70,62 @@ class Lander:
         return [dr, ddr, dtheta, ddtheta, dm]
 
     def propagate(self, S, duration):
+        def surface_contact(t, S):
+            return S[0] - r_moon
+
+        surface_contact.terminal = True
+        surface_contact.direction = -1
+
         sol = solve_ivp(
             lambda t, S: self.dynamics(t, S),
             (0, duration),
             self.S,
             method="RK45",
             t_eval=np.linspace(0, duration, duration * 10),
+            events=[surface_contact],
         )
         return sol
 
 
 Apollo = Lander(np.array([r0, dr0, theta0, dtheta0, 15200]), 311, 45000, 4280)
 
+# Apollo Transform
 sol = Apollo.propagate(Apollo.S, t_total)
+x = sol.y[0] * np.cos(sol.y[2])
+y = sol.y[0] * np.sin(sol.y[2])
+
+# Moon Transform
+theta_circle = np.linspace(0, 2 * np.pi, 1000)
+x_moon = r_moon * np.cos(theta_circle)
+y_moon = r_moon * np.sin(theta_circle)
+
+fig, axs = plt.subplots(2, 2, figsize=(14, 8))
+
+# The trajectory
+axs[0, 0].plot(x, y, label="Apollo")
+axs[0, 0].plot(x_moon, y_moon, "gray", label="Moon Surface")
+axs[0, 0].set_xlim(min(x) - 10_000, max(x) + 10_000)
+axs[0, 0].set_ylim(min(y) - 10_000, max(y) + 10_000)
+axs[0, 0].set_xlabel("x (m)")
+axs[0, 0].set_ylabel("y (m)")
+axs[0, 0].set_title("Apollo Trajectory")
+axs[0, 0].legend()
+
+# Altitude vs. Time
+axs[0, 1].plot(sol.t, sol.y[0] - r_moon)
+axs[0, 1].set_xlabel("Time (s)")
+axs[0, 1].set_ylabel("Altitude (m)")
+axs[0, 1].set_title("Altitude vs. Time")
+
+# Velocity Components
+axs[1, 0].plot(sol.t, sol.y[1])
+axs[1, 0].set_xlabel("Time (s)")
+axs[1, 0].set_ylabel("Velocity (m/s)")
+axs[1, 0].set_title("Velocity Components")
+
+# Fuel
+axs[1, 1].plot(sol.t, sol.y[4])
+axs[1, 1].set_xlabel("Time (s)")
+axs[1, 1].set_ylabel("Mass (kg)")
+axs[1, 1].set_title("Fuel Consumption")
+plt.show()
