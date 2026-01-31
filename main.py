@@ -11,17 +11,17 @@ m_moon = 7.34767309e22  # kg
 mu = G * m_moon  # m^3/s^2
 
 # Initial Conditions
-r0 = r_moon + 15_240
-dr0 = 0
-theta0 = 40 * np.pi / 180
-dtheta0 = np.sqrt(mu / (r_moon + 15_240)) / (r_moon + 15_240)
-m0 = 15_240
+r0 = r_moon + 15_240  # m
+dr0 = 0  # m/s
+theta0 = 40 * np.pi / 180  # rad
+dtheta0 = -np.sqrt(mu / (r_moon + 15_240)) / (r_moon + 15_240)  # rad/s
+m0 = 15_240  # kg
 
 # Target Conditions
-target_r = r_moon
-target_dr = 0
-target_theta = theta0 + 480_000 / r_moon
-target_dtheta = 0
+target_r = r_moon  # m
+target_dr = 0  # m/s
+target_theta = theta0 - 480_000 / r_moon  # rad
+target_dtheta = 0  # rad/s
 
 
 class Lander:
@@ -44,18 +44,14 @@ class Lander:
         gamma = np.arctan2(-v_theta, -dr)
 
         # Phase 0 Floating
-        T, alpha = 0, 0
+        T, alpha = T_max, 0
+        # Phase 2 Rotate Windows
+        if theta < 32 * np.pi / 180:
+            alpha = 79 * np.pi / 180
         # Phase 1 Braking
-        if phase < 0.2:
+        else:
             T = T_max
-            alpha = np.pi / 2 - 0.05
-        # Phase 2: Approach
-        # elif alt < 8_000:
-        #  T = T_max
-        #  alpha = gamma
-        # Phase 3: Descent
-        # elif alt < 3_000:
-        #  return
+            alpha = 93 * np.pi / 180
         return T, alpha
 
     def dynamics(self, t, S):
@@ -64,10 +60,10 @@ class Lander:
 
         # Radial
         dr = dr
-        ddr = T / m * np.cos(-alpha) - mu / r**2 + r * dtheta**2
+        ddr = T / m * np.cos(alpha) - mu / r**2 + r * dtheta**2
         # Angular
         dtheta = dtheta
-        ddtheta = 1 / r * (T / m * np.sin(-alpha) - 2 * dr * dtheta)
+        ddtheta = 1 / r * (T / m * np.sin(alpha) - 2 * dr * dtheta)
         # Mass
         dm = -T / (G_earth * self.Isp)
 
@@ -96,27 +92,22 @@ class Lander:
 Apollo = Lander(np.array([r0, dr0, theta0, dtheta0, m0]), 311, 45000, 4280)
 sol = Apollo.propagate(Apollo.S, t_total)
 
-# Apollo Transform
-x = sol.y[0] * np.cos(sol.y[2])
-y = sol.y[0] * np.sin(sol.y[2])
+# Convert rad to deg
+sol.y[2] *= 180 / np.pi
+theta0 *= 180 / np.pi
+target_theta *= 180 / np.pi
 
-# Target Transform
-x_target = target_r * np.cos(target_theta)
-y_target = target_r * np.sin(target_theta)
-
-# Moon Transform
-theta_circle = np.linspace(0, 2 * np.pi, 1000)
-x_moon = r_moon * np.cos(theta_circle)
-y_moon = r_moon * np.sin(theta_circle)
-
+# Plotting
 fig, axs = plt.subplots(2, 2, figsize=(14, 8))
 
 # The trajectory
 axs[0, 0].plot(sol.y[2], sol.y[0], label="Eagle Path")
 axs[0, 0].axhline(y=r_moon, color="gray", linestyle="--", label="Moon Surface")
 axs[0, 0].scatter(target_theta, target_r, color="red", label="Target")
-axs[0, 0].set_xlim(max(sol.y[2]) + 0.05, min(sol.y[2]) - 0.05)
-axs[0, 0].set_xlabel("Theta (rad)")
+axs[0, 0].scatter(sol.y[2][-1], sol.y[0][-1], color="black", marker="x", label="Impact")
+axs[0, 0].set_xlim(theta0, target_theta - 1)
+axs[0, 0].set_ylim(r_moon - 500, r0 + 500)
+axs[0, 0].set_xlabel("Theta (°)")
 axs[0, 0].set_ylabel("Radius (m)")
 axs[0, 0].set_title("Radius vs. Theta (Descending Orbit)")
 axs[0, 0].legend()
