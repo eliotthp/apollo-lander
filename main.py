@@ -5,36 +5,27 @@ from scipy.integrate import solve_ivp
 # Simulation Constants
 G = 6.67408e-11  # m^3/kg/s^2
 G_earth = 9.81  # m/s^2
-t_total = 2000  # s
+t_total = 1000  # s
 r_moon = 1737e3  # m
 m_moon = 7.34767309e22  # kg
 mu = G * m_moon  # m^3/s^2
 
-# Starting Conditions
-r0 = r_moon + 15_000  # m
-dr0 = 0  # m/s
-v0 = -np.sqrt(mu / r0)
-theta0 = np.pi / 2  # rad
-dtheta0 = v0 / r0  # rad/s
+# Initial Conditions
+r0 = r_moon + 15_240
+dr0 = 0
+theta0 = 40 * np.pi / 180
+dtheta0 = np.sqrt(mu / (r_moon + 15_240)) / (r_moon + 15_240)
+m0 = 15_240
 
 # Target Conditions
-target_r = r_moon  # m
-target_dr = 0  # m/s
-target_theta = 480_000 / r_moon  # rad
-target_dtheta = 0  # rad/s
+target_r = r_moon
+target_dr = 0
+target_theta = theta0 + 480_000 / r_moon
+target_dtheta = 0
 
 
 class Lander:
     def __init__(self, S, Isp, T_max, m_e):
-        """
-        Initialize the Lander object
-
-        :param self: The Lander object
-        :param S: Initial state of the lander (numpy array of 5 elements: r, dr, theta, dtheta, m)
-        :param Isp: Specific impulse of the lander (s)
-        :param T: Maximum thrust of the lander (N)
-        :param m_e: Empty mass of the lander (kg)
-        """
         self.S = S
         self.Isp = Isp
         self.T_max = T_max
@@ -45,18 +36,26 @@ class Lander:
         T_max = self.T_max
         alt = r - r_moon
 
-        T = 0
-        alpha = 0
-        if theta < 0.4:
-            T = T_max
-            alpha = np.pi
-        if alt < 5_000:
-            T = T_max * 0.6
-            alpha = np.pi / 4
-        if alt < 500:
-            T = T_max * 0.2
-            alpha = 0
+        # Determine Phase angle
+        phase = theta - target_theta
 
+        # Determine Angle of Thrust
+        v_theta = dtheta * r
+        gamma = np.arctan2(-v_theta, -dr)
+
+        # Phase 0 Floating
+        T, alpha = 0, 0
+        # Phase 1 Braking
+        if phase < 0.2:
+            T = T_max
+            alpha = np.pi / 2 - 0.05
+        # Phase 2: Approach
+        # elif alt < 8_000:
+        #  T = T_max
+        #  alpha = gamma
+        # Phase 3: Descent
+        # elif alt < 3_000:
+        #  return
         return T, alpha
 
     def dynamics(self, t, S):
@@ -65,10 +64,10 @@ class Lander:
 
         # Radial
         dr = dr
-        ddr = T / m * np.cos(alpha) - mu / r**2 + r * dtheta**2
+        ddr = T / m * np.cos(-alpha) - mu / r**2 + r * dtheta**2
         # Angular
         dtheta = dtheta
-        ddtheta = 1 / r * (T / m * np.sin(alpha) - 2 * dr * dtheta)
+        ddtheta = 1 / r * (T / m * np.sin(-alpha) - 2 * dr * dtheta)
         # Mass
         dm = -T / (G_earth * self.Isp)
 
@@ -88,11 +87,13 @@ class Lander:
             method="RK45",
             t_eval=np.linspace(0, duration, duration * 10),
             events=[surface_contact],
+            max_step=1,
         )
         return sol
 
 
-Apollo = Lander(np.array([r0, dr0, theta0, dtheta0, 15200]), 311, 45000, 4280)
+# Starting Conditions (Burn Ignition State)
+Apollo = Lander(np.array([r0, dr0, theta0, dtheta0, m0]), 311, 45000, 4280)
 sol = Apollo.propagate(Apollo.S, t_total)
 
 # Apollo Transform
@@ -111,31 +112,37 @@ y_moon = r_moon * np.sin(theta_circle)
 fig, axs = plt.subplots(2, 2, figsize=(14, 8))
 
 # The trajectory
-axs[0, 0].plot(x, y, label="Apollo")
-axs[0, 0].plot(x_moon, y_moon, "gray", label="Moon Surface")
-axs[0, 0].scatter(x_target, y_target, color="red", label="Target")
-axs[0, 0].set_xlim(x_target - 25_000, x_target + 10_000)
-axs[0, 0].set_ylim(y_target - 10_000, y_target + 75_000)
-axs[0, 0].set_xlabel("x (m)")
-axs[0, 0].set_ylabel("y (m)")
-axs[0, 0].set_title("Apollo Trajectory")
+axs[0, 0].plot(sol.y[2], sol.y[0], label="Eagle Path")
+axs[0, 0].axhline(y=r_moon, color="gray", linestyle="--", label="Moon Surface")
+axs[0, 0].scatter(target_theta, target_r, color="red", label="Target")
+axs[0, 0].set_xlim(max(sol.y[2]) + 0.05, min(sol.y[2]) - 0.05)
+axs[0, 0].set_xlabel("Theta (rad)")
+axs[0, 0].set_ylabel("Radius (m)")
+axs[0, 0].set_title("Radius vs. Theta (Descending Orbit)")
 axs[0, 0].legend()
+axs[0, 0].grid(True)
 
 # Altitude vs. Time
 axs[0, 1].plot(sol.t, sol.y[0] - r_moon)
 axs[0, 1].set_xlabel("Time (s)")
 axs[0, 1].set_ylabel("Altitude (m)")
 axs[0, 1].set_title("Altitude vs. Time")
+axs[0, 1].grid(True)
 
 # Velocity Components
-axs[1, 0].plot(sol.t, sol.y[1])
+axs[1, 0].plot(sol.t, sol.y[1], label="Radial")
+axs[1, 0].plot(sol.t, -(sol.y[3] * sol.y[0]), label="Angular")
 axs[1, 0].set_xlabel("Time (s)")
 axs[1, 0].set_ylabel("Velocity (m/s)")
 axs[1, 0].set_title("Velocity Components")
+axs[1, 0].legend()
+axs[1, 0].grid(True)
 
 # Fuel
 axs[1, 1].plot(sol.t, sol.y[4])
 axs[1, 1].set_xlabel("Time (s)")
 axs[1, 1].set_ylabel("Mass (kg)")
 axs[1, 1].set_title("Fuel Consumption")
+axs[1, 1].grid(True)
+plt.tight_layout()
 plt.show()
