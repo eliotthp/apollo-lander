@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import solve_ivp
 
@@ -27,9 +28,9 @@ guidance_timeline = {
     258: [0.95, 72.0],
     384: [0.95, 73.0],
     402: [0.95, 70.7],
-    506: [0.60, 45.0],
-    556: [0.40, 10.0],
-    606: [0.00, 00.0],
+    506: [0.3835, -11.0],
+    606: [0.20, 00.0],
+    714: [0.00, 00.0],
 }
 
 
@@ -71,7 +72,13 @@ def surface_contact(t, S):
 surface_contact.terminal = True
 surface_contact.direction = -1
 
-sol = solve_ivp(lambda t, S: dynamics(t, S), (0, 720), S0, method="RK45", max_step=1)
+sol = solve_ivp(
+    lambda t, S: dynamics(t, S),
+    (0, 1000),
+    S0,
+    method="RK45",
+    events=[surface_contact],
+)
 
 # --- Choose time ---
 check_time = 606
@@ -85,12 +92,12 @@ print(f"Altitude: {sol.y[0][idx] - r_moon:.2f} m")
 print(f"Radial Velocity: {sol.y[1][idx]:.2f} m/s")
 print(f"Tangential Velocity: {v_tangential:.2f} m/s")
 print(f"Inertial Velocity: {v_inertial:.2f} m/s")
-"""
+
 # Target Conditions
-target_r = r_moon # m
-target_dr = 0 # m/s
-target_theta = theta0 - 480_000/r_moon # rad
-target_dtheta = 0 # rad/s
+target_r = r_moon  # m
+target_dr = 0  # m/s
+target_theta = theta0 - 480_000 / r_moon  # rad
+target_dtheta = 0  # rad/s
 
 # Final Conditions
 final_r = sol.y[0][-1]
@@ -101,56 +108,59 @@ final_m = sol.y[4][-1]
 
 # Final Stats
 miss_distance = (sol.y[2][-1] - target_theta) * r_moon
-print(f"--- MISSION DATA ---")
-print(f"Impact Velocity: {np.sqrt(final_dr**2 + (final_dtheta*final_r)**2):.2f} m/s")
-print(f"Miss Distance: {miss_distance/1000:.2f} km")
+print("--- MISSION DATA ---")
+print(
+    f"Impact Velocity: {np.sqrt(final_dr**2 + (final_dtheta * final_r) ** 2):.2f} m/s"
+)
+print(f"Miss Distance: {miss_distance / 1000:.2f} km")
 print(f"Remaining Propellant: {(final_m - m_empty):.2f} kg")
 
 # Convert rad to deg
-sol.y[2] *= 180/np.pi
-theta0 *= 180/np.pi
-target_theta *= 180/np.pi
-final_theta *= 180/np.pi
+sol.y[2] *= 180 / np.pi
+theta0 *= 180 / np.pi
+target_theta *= 180 / np.pi
+final_theta *= 180 / np.pi
 
 # Plotting
 fig, axs = plt.subplots(2, 2, figsize=(14, 8))
 
 # The trajectory
-axs[0,0].plot(sol.y[2], sol.y[0] - r_moon, label='Eagle Path')
-axs[0,0].axhline(y=0, color='gray', linestyle='--', label='Moon Surface')
-axs[0,0].scatter(target_theta, target_r - r_moon, color='red', label='Target')
-axs[0,0].scatter(final_theta, final_r - r_moon, color='black', marker='x', label='Impact')
-axs[0,0].set_xlim(theta0, target_theta - 1)
-axs[0,0].set_ylim(-500, max(sol.y[0] - r_moon) + 500)
-axs[0,0].set_xlabel('Theta (°)')
-axs[0,0].set_ylabel('Radius (m)')
-axs[0,0].set_title('Radius vs. Theta (Descending Orbit)')
-axs[0,0].legend()
-axs[0,0].grid(True)
+axs[0, 0].plot(sol.y[2], sol.y[0] - r_moon, label="Eagle Path")
+axs[0, 0].axhline(y=0, color="gray", linestyle="--", label="Moon Surface")
+axs[0, 0].scatter(target_theta, target_r - r_moon, color="red", label="Target")
+axs[0, 0].scatter(
+    final_theta, final_r - r_moon, color="black", marker="x", label="Impact"
+)
+axs[0, 0].set_xlim(theta0, target_theta - 1)
+axs[0, 0].set_ylim(-500, max(sol.y[0] - r_moon) + 500)
+axs[0, 0].set_xlabel("Theta (°)")
+axs[0, 0].set_ylabel("Radius (m)")
+axs[0, 0].set_title("Radius vs. Theta (Descending Orbit)")
+axs[0, 0].legend()
+axs[0, 0].grid(True)
 
 # Altitude vs. Time
-axs[0,1].plot(sol.t, sol.y[0] - r_moon)
-axs[0,1].set_ylim(-500, max(sol.y[0] - r_moon) + 500)
-axs[0,1].set_xlabel('Time (s)')
-axs[0,1].set_ylabel('Altitude (m)')
-axs[0,1].set_title('Altitude vs. Time')
-axs[0,1].grid(True)
+axs[0, 1].plot(sol.t, sol.y[0] - r_moon)
+axs[0, 1].set_ylim(-500, max(sol.y[0] - r_moon) + 500)
+axs[0, 1].set_xlabel("Time (s)")
+axs[0, 1].set_ylabel("Altitude (m)")
+axs[0, 1].set_title("Altitude vs. Time")
+axs[0, 1].grid(True)
 
 # Velocity Components
-axs[1,0].plot(sol.t, sol.y[1], label='Radial')
-axs[1,0].plot(sol.t, -(sol.y[3] * sol.y[0]), label='Angular')
-axs[1,0].set_xlabel('Time (s)')
-axs[1,0].set_ylabel('Velocity (m/s)')
-axs[1,0].set_title('Velocity Components')
-axs[1,0].legend()
-axs[1,0].grid(True)
+axs[1, 0].plot(sol.t, sol.y[1], label="Radial")
+axs[1, 0].plot(sol.t, -(sol.y[3] * sol.y[0]), label="Angular")
+axs[1, 0].set_xlabel("Time (s)")
+axs[1, 0].set_ylabel("Velocity (m/s)")
+axs[1, 0].set_title("Velocity Components")
+axs[1, 0].legend()
+axs[1, 0].grid(True)
 
 # Fuel
-axs[1,1].plot(sol.t, sol.y[4])
-axs[1,1].set_xlabel('Time (s)')
-axs[1,1].set_ylabel('Mass (kg)')
-axs[1,1].set_title('Fuel Consumption')
-axs[1,1].grid(True)
+axs[1, 1].plot(sol.t, sol.y[4])
+axs[1, 1].set_xlabel("Time (s)")
+axs[1, 1].set_ylabel("Mass (kg)")
+axs[1, 1].set_title("Fuel Consumption")
+axs[1, 1].grid(True)
 plt.tight_layout()
 plt.show()
-"""
