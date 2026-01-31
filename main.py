@@ -42,11 +42,19 @@ class Lander:
 
     def controller(self, S):
         r, dr, theta, dtheta, m = S
-        if theta < 0.3762:
-            T = self.T_max
+        T_max = self.T_max
+        alt = r - r_moon
+
+        T = 0
+        alpha = 0
+        if theta < 0.4:
+            T = T_max
             alpha = np.pi
-        else:
-            T = 0
+        if alt < 5_000:
+            T = T_max * 0.6
+            alpha = np.pi / 4
+        if alt < 500:
+            T = T_max * 0.2
             alpha = 0
 
         return T, alpha
@@ -85,9 +93,9 @@ class Lander:
 
 
 Apollo = Lander(np.array([r0, dr0, theta0, dtheta0, 15200]), 311, 45000, 4280)
+sol = Apollo.propagate(Apollo.S, t_total)
 
 # Apollo Transform
-sol = Apollo.propagate(Apollo.S, t_total)
 x = sol.y[0] * np.cos(sol.y[2])
 y = sol.y[0] * np.sin(sol.y[2])
 
@@ -106,8 +114,8 @@ fig, axs = plt.subplots(2, 2, figsize=(14, 8))
 axs[0, 0].plot(x, y, label="Apollo")
 axs[0, 0].plot(x_moon, y_moon, "gray", label="Moon Surface")
 axs[0, 0].scatter(x_target, y_target, color="red", label="Target")
-axs[0, 0].set_xlim(x_target - 10_000, x_target + 10_000)
-axs[0, 0].set_ylim(y_target - 10_000, y_target + 10_000)
+axs[0, 0].set_xlim(x_target - 25_000, x_target + 10_000)
+axs[0, 0].set_ylim(y_target - 10_000, y_target + 75_000)
 axs[0, 0].set_xlabel("x (m)")
 axs[0, 0].set_ylabel("y (m)")
 axs[0, 0].set_title("Apollo Trajectory")
