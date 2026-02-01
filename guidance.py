@@ -6,7 +6,7 @@ def poly_guidance(t, S, tf):
     Returns the reference position, velocity, and acceleration
     for a cubic trajectory.
     """
-    # Matrix remains exactly as you designed
+    # Coefficients of the polynomial
     a_mat = np.array(
         [[0, 0, 0, 1], [tf**3, tf**2, tf, 1], [0, 0, 1, 0], [3 * tf**2, 2 * tf, 1, 0]]
     )

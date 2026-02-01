@@ -1,8 +1,9 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
-import guidance  # Importing the guidance module
-import visualization  # Importing the visualization module
+import controller as ctrl  # Importing the controller module
+import visualization as viz  # Importing the visualization module
+
 
 # --- Constants & Environment ---
 G = 6.67408e-11  # m^3/kg/s^2
@@ -32,71 +33,17 @@ S0 = [r0, dr0, theta0, dtheta0, m0, alpha0]
 
 
 # --- Functions ---
-def controller(t, S):
-    # Navigation
-    r_act, dr_act, theta_act, dtheta_act, m, alpha_act = S
-
-    # Braking Phase
-    if r_act - r_moon > 2346.96:
-        tf_total = 500
-        t_go = max(0.01, tf_total - t)
-
-        # Guidance
-        _, _, ddr_req = guidance.poly_guidance(
-            0, [r_act, target_r[0], dr_act, target_dr[0]], t_go
-        )
-        _, _, ddtheta_req = guidance.poly_guidance(
-            0, [theta_act, target_theta[0], dtheta_act, target_dtheta[0]], t_go
-        )
-
-        Fr = m * (ddr_req + mu / r_act**2 - r_act * dtheta_act**2)
-        Ft = m * (r_act * ddtheta_req + 2 * dr_act * dtheta_act)
-
-        thrust_req = np.sqrt(Fr**2 + Ft**2)
-        alpha_req = np.arctan2(Ft, Fr)
-
-        # Apply Limits
-        thrust_pct = 0.95
-        thrust_req = np.clip(thrust_req, T_max * thrust_pct, T_max * thrust_pct)
-    else:
-        """'
-    # Determine time remaining
-    tf_total = 580
-    t_go = max(0.01, tf_total - t)
-
-    # Guidance
-    _, _, ddr_req = Guidance.poly_guidance(t, [r0, target_r[-1], dr0, target_dr[-1]], tf_total)
-    _, _, ddtheta_req = Guidance.poly_guidance(t, [theta0, target_theta[-1], dtheta0, target_dtheta[-1]], tf_total)
-
-    # Control
-    Fr = m * (ddr_req + mu/r_act**2 - r_act*dtheta_act**2)
-    Ft = m * (r_act*ddtheta_req + 2*dr_act*dtheta_act)
-
-    thrust_req = np.sqrt(Fr**2 + Ft**2)
-    alpha_req = np.arctan2(Ft, Fr)
-
-    # Apply Limits
-    thrust_pct = np.clip(thrust_req / T_max, 0, 1)
-
-    if r_act <= r_moon + 0.1:
-      thrust_pct = 0
-    """
-        thrust_req, alpha_req = 0, 0
-
-    return thrust_req, alpha_req
-
-
 def dynamics(t, S):
     r, dr, theta, dtheta, m, alpha = S
 
-    thrust_req, alpha_req = controller(t, S)
+    T_cmd, alpha_cmd = ctrl.control(t, S)
 
     # Controller Logic (Functional)
-    T = thrust_req
-    if alpha_req - alpha > 0:
-        dalpha = np.deg2rad(np.clip(5, 0, alpha_req - alpha))
+    T = T_cmd
+    if alpha_cmd - alpha > 0:
+        dalpha = np.deg2rad(np.clip(5, 0, alpha_cmd - alpha))
     else:
-        dalpha = -np.deg2rad(np.clip(5, alpha_req - alpha, 0))
+        dalpha = -np.deg2rad(np.clip(5, alpha_cmd - alpha, 0))
 
     # Fuel Guardrail
     if m <= m_empty:
@@ -145,7 +92,7 @@ reconstructed_thrust = []
 for i in range(len(sol.t)):
     t_val = sol.t[i]
     s_val = sol.y[:, i]
-    pct, rad = controller(t_val, s_val)
+    pct, rad = ctrl.control(t_val, s_val)
     deg = np.rad2deg(rad)
     pct /= T_max
     reconstructed_alpha.append(deg)
@@ -160,4 +107,4 @@ plt.tight_layout()
 plt.show()
 
 # --- Plot ---
-visualization.plot_mission_results(sol, mission_params)
+viz.plot_mission_results(sol, mission_params)
