@@ -1,6 +1,6 @@
 import guidance
 import numpy as np
-import enviroment as env
+import environment as env
 
 # --- Constants & Environment ---
 G_earth = env.G_earth
@@ -28,8 +28,7 @@ def control(t, S, targets):
         _, _, ddz_cmd = guidance.poly_guidance(0, [z, zf, dz, dzf], tf)
         _, _, ddx_cmd = guidance.poly_guidance(0, [x, xf, dx, dxf], tf)
     else:
-        ddz_cmd = 0
-        ddx_cmd = 0
+        return 0, 0
 
     T_cmd = m * np.sqrt((ddz_cmd + g) ** 2 + ddx_cmd**2)
     alpha_cmd = np.arctan2(ddx_cmd, ddz_cmd + g)

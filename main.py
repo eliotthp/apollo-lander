@@ -3,7 +3,7 @@ from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 import controller as ctrl  # Importing the controller module
 import visualization as viz  # Importing the visualization module
-import enviroment as env
+import environment as env  # Importing the enviromental variables
 
 # --- Constants & Environment ---
 G_earth = env.G_earth
