@@ -9,6 +9,17 @@ mu = env.mu
 
 
 def control(t, S, targets):
+    """
+    Calculates the required thrust and pitch angle to follow a guided trajectory.
+
+    Args:
+        t (float): Current simulation time.
+        S (list): Current state vector [r, dr, theta, dtheta, m, alpha].
+        targets (list): Target conditions [zf, dzf, xf, dxf].
+
+    Returns:
+        tuple: (T_cmd, alpha_cmd) Commanded thrust in Newtons and pitch angle in radians.
+    """
     # Unpack State
     r, dr, theta, dtheta, m, alpha = S
     zf, dzf, xf, dxf = targets
@@ -21,7 +32,7 @@ def control(t, S, targets):
     dx = r_moon * dtheta
 
     # Constraints
-    dalpha = 5  # deg/s
+    alpha_limit = np.deg2rad(5)  # rad/s
 
     # Braking Phase
     if z > 2346.96:
@@ -37,9 +48,9 @@ def control(t, S, targets):
     alpha_cmd = np.arctan2(ddx_cmd, ddz_cmd + g)
 
     # Attitude rate limit
-    if alpha_cmd > dalpha:
-        alpha_cmd = dalpha
-    elif alpha_cmd < -dalpha:
-        alpha_cmd = -dalpha
+    if alpha_cmd > alpha_limit:
+        alpha_cmd = alpha_limit
+    elif alpha_cmd < -alpha_limit:
+        alpha_cmd = -alpha_limit
 
     return T_cmd, alpha_cmd

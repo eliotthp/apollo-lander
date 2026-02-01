@@ -21,14 +21,12 @@ theta0 = np.radians(40)  # rad
 dtheta0 = -np.sqrt(mu / (r_moon + 14_878)) / (r_moon + 14_878)  # rad/s
 alpha0 = np.pi / 2  # rad
 
-
 # --- Target Conditions ---
 zf = [2346.96, r_moon]  # m
 dzf = [-44.2, 0]  # m/s
 xf = [400_000, 480_000]  # m
 dxf = [-44.2, 0]  # m/s
 targets = np.array([zf, dzf, xf, dxf])
-
 
 S0 = [r0, dr0, theta0, dtheta0, m0, alpha0]
 
