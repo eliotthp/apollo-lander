@@ -21,7 +21,6 @@ theta0 = np.radians(40)  # rad
 dtheta0 = -np.sqrt(mu / (r_moon + 14_878)) / (r_moon + 14_878)  # rad/s
 alpha0 = np.pi / 2  # rad
 
-
 # --- Target Conditions ---
 zf = [2346.96, r_moon]  # m
 dzf = [-44.2, 0]  # m/s
@@ -29,12 +28,21 @@ xf = [400_000, 480_000]  # m
 dxf = [-44.2, 0]  # m/s
 targets = np.array([zf, dzf, xf, dxf])
 
-
 S0 = [r0, dr0, theta0, dtheta0, m0, alpha0]
 
 
 # --- Functions ---
 def dynamics(t, S):
+    """
+    Calculates the derivatives of the state vector for the lunar lander.
+
+    Args:
+        t (float): Current simulation time.
+        S (list): Current state vector [r, dr, theta, dtheta, m, alpha].
+
+    Returns:
+        list: Derivatives of the state vector [dr, ddr, dtheta, ddtheta, dm, dalpha].
+    """
     r, dr, theta, dtheta, m, alpha = S
 
     T_cmd, alpha_cmd = ctrl.control(t, S, targets[:, 0].tolist())
@@ -55,6 +63,16 @@ def dynamics(t, S):
 
 # --- Simulation ---
 def surface_contact(t, S):
+    """
+    Event function to detect when the lander reaches the lunar surface.
+
+    Args:
+        t (float): Current simulation time.
+        S (list): Current state vector.
+
+    Returns:
+        float: Altitude above the lunar surface (zero at contact).
+    """
     return S[0] - r_moon
 
 
