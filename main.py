@@ -22,11 +22,13 @@ dtheta0 = -np.sqrt(mu / (r_moon + 14_878)) / (r_moon + 14_878)  # rad/s
 alpha0 = np.pi / 2  # rad
 
 
-# Target Conditions
-target_r = [2346.96 + r_moon, r_moon]  # m
-target_dr = [-44.2, 0]  # m/s
-target_theta = [np.radians(24.5), theta0 - 480_000 / r_moon]  # rad
-target_dtheta = [-8.828e-5, 0]  # rad/s
+# --- Target Conditions ---
+zf = [2346.96, r_moon]  # m
+dzf = [-44.2, 0]  # m/s
+xf = [400_000, 480_000]  # m
+dxf = [-44.2, 0]  # m/s
+targets = np.array([zf, dzf, xf, dxf])
+
 
 S0 = [r0, dr0, theta0, dtheta0, m0, alpha0]
 
@@ -35,7 +37,7 @@ S0 = [r0, dr0, theta0, dtheta0, m0, alpha0]
 def dynamics(t, S):
     r, dr, theta, dtheta, m, alpha = S
 
-    T_cmd, alpha_cmd = ctrl.control(t, S)
+    T_cmd, alpha_cmd = ctrl.control(t, S, targets[:, 0].tolist())
 
     # Controller Logic (Functional)
     T = T_cmd
@@ -76,8 +78,8 @@ sol = solve_ivp(
 # --- Results ---
 mission_params = {
     "r_moon": r_moon,
-    "target_theta": target_theta,
-    "target_r": target_r,
+    "target_theta": xf[-1] / r_moon,
+    "target_r": zf[-1] + r_moon,
     "theta0": theta0,
     "m0": m0,
     "m_empty": m_empty,
@@ -91,7 +93,7 @@ reconstructed_thrust = []
 for i in range(len(sol.t)):
     t_val = sol.t[i]
     s_val = sol.y[:, i]
-    pct, rad = ctrl.control(t_val, s_val)
+    pct, rad = ctrl.control(t_val, s_val, targets[:, 0].tolist())
     deg = np.rad2deg(rad)
     pct /= T_max
     reconstructed_alpha.append(deg)

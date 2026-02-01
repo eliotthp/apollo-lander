@@ -8,9 +8,10 @@ r_moon = env.r_moon
 mu = env.mu
 
 
-def control(t, S):
+def control(t, S, targets):
     # Unpack State
     r, dr, theta, dtheta, m, alpha = S
+    zf, dzf, xf, dxf = targets
     g = mu / r**2
 
     # Convert to LVLH
@@ -24,8 +25,8 @@ def control(t, S):
         tf = 500
 
         # Guidance
-        _, _, ddz_cmd = guidance.poly_guidance(0, [z, 2346.96, dz, -44.20], tf)
-        _, _, ddx_cmd = guidance.poly_guidance(0, [x, 400_000, dx, 44.20], tf)
+        _, _, ddz_cmd = guidance.poly_guidance(0, [z, zf, dz, dzf], tf)
+        _, _, ddx_cmd = guidance.poly_guidance(0, [x, xf, dx, dxf], tf)
     else:
         ddz_cmd = 0
         ddx_cmd = 0

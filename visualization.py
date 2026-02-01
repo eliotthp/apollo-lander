@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+# In future auto-update graphs to be displayed in GitHub
+
 
 def plot_mission_results(sol, params):
     # Unpack the parameters dictionary for cleaner math
@@ -22,7 +24,7 @@ def plot_mission_results(sol, params):
     delta_v = Isp * G_earth * np.log(m0 / m_empty)
 
     # Final Stats
-    miss_distance = (sol.y[2][-1] - target_theta[-1]) * r_moon
+    miss_distance = (sol.y[2][-1] - target_theta) * r_moon
 
     print(f"--- MISSION DATA --- Final Time: {sol.t[-1]:.2f} s ---")
     print(
@@ -35,7 +37,7 @@ def plot_mission_results(sol, params):
     # Convert rad to deg
     sol.y[2] *= 180 / np.pi
     theta0 *= 180 / np.pi
-    target_theta[-1] *= 180 / np.pi
+    target_theta *= 180 / np.pi
     final_theta *= 180 / np.pi
 
     # Plotting
@@ -44,13 +46,11 @@ def plot_mission_results(sol, params):
     # The trajectory
     axs[0, 0].plot(sol.y[2], sol.y[0] - r_moon, label="Eagle Path")
     axs[0, 0].axhline(y=0, color="gray", linestyle="--", label="Moon Surface")
-    axs[0, 0].scatter(
-        target_theta[-1], target_r[-1] - r_moon, color="red", label="Target"
-    )
+    axs[0, 0].scatter(target_theta, target_r - r_moon, color="red", label="Target")
     axs[0, 0].scatter(
         final_theta, final_r - r_moon, color="black", marker="x", label="Impact"
     )
-    axs[0, 0].set_xlim(theta0, target_theta[-1] - 1)
+    axs[0, 0].set_xlim(theta0, target_theta - 1)
     axs[0, 0].set_ylim(-500, max(sol.y[0] - r_moon) + 500)
     axs[0, 0].set_xlabel("Theta (°)")
     axs[0, 0].set_ylabel("Radius (m)")
