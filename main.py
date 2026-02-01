@@ -62,10 +62,10 @@ def controller(t, S):
 
         # Guidance
         _, _, ddr_req = guidance.poly_guidance(
-            t, [r0, target_r, dr0, target_dr], tf_total
+            t, [r0, target_r[0], dr0, target_dr[0]], tf_total
         )
         _, _, ddtheta_req = guidance.poly_guidance(
-            t, [theta0, target_theta, dtheta0, target_dtheta], tf_total
+            t, [theta0, target_theta[0], dtheta0, target_dtheta[0]], tf_total
         )
 
         # Control
