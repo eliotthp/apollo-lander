@@ -9,17 +9,18 @@ import enviroment as env
 G_earth = env.G_earth
 r_moon = env.r_moon
 mu = env.mu
+Isp = env.Isp
+m_empty = env.m_empty
+m0 = env.m0
+T_max = env.T_max
 
 # --- Initial Conditions (From Apollo 11 Event B) ---
 r0 = r_moon + 14_878  # m
 dr0 = -1.22  # m/s
 theta0 = np.radians(40)  # rad
 dtheta0 = -np.sqrt(mu / (r_moon + 14_878)) / (r_moon + 14_878)  # rad/s
-m0 = 15_240  # kg
 alpha0 = np.pi / 2  # rad
-m_empty = 4_280  # kg
-Isp = 311  # s
-T_max = 45_000  # N
+
 
 # Target Conditions
 target_r = [2346.96 + r_moon, r_moon]  # m
