@@ -1,8 +1,8 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
-import guidance  # Importing the guidance module
 import visualization  # Importing the visualization module
+import guidance  # Importing the guidance module
 
 
 # --- Constants & Environment ---
@@ -38,13 +38,15 @@ def controller(t, S):
 
     # Braking Phase
     if r_act - r_moon > 2346.96:
-        tf_total = 8 * 60 + 26
+        tf_total = 500
+        t_go = max(0.01, tf_total - t)
+
         # Guidance
         _, _, ddr_req = guidance.poly_guidance(
-            t, [r0, target_r[0], dr0, target_dr[0]], tf_total
+            0, [r_act, target_r[0], dr_act, target_dr[0]], t_go
         )
         _, _, ddtheta_req = guidance.poly_guidance(
-            t, [theta0, target_theta[0], dtheta0, target_dtheta[0]], tf_total
+            0, [theta_act, target_theta[0], dtheta_act, target_dtheta[0]], t_go
         )
 
         Fr = m * (ddr_req + mu / r_act**2 - r_act * dtheta_act**2)
@@ -55,33 +57,33 @@ def controller(t, S):
 
         # Apply Limits
         thrust_pct = 0.95
+        thrust_req = np.clip(thrust_req, T_max * thrust_pct, T_max * thrust_pct)
     else:
-        # Determine time remaining
-        tf_total = 580
-        t_go = max(0.01, tf_total - t)
+        """'
+    # Determine time remaining
+    tf_total = 580
+    t_go = max(0.01, tf_total - t)
 
-        # Guidance
-        _, _, ddr_req = guidance.poly_guidance(
-            t, [r0, target_r[0], dr0, target_dr[0]], tf_total
-        )
-        _, _, ddtheta_req = guidance.poly_guidance(
-            t, [theta0, target_theta[0], dtheta0, target_dtheta[0]], tf_total
-        )
+    # Guidance
+    _, _, ddr_req = Guidance.poly_guidance(t, [r0, target_r[-1], dr0, target_dr[-1]], tf_total)
+    _, _, ddtheta_req = Guidance.poly_guidance(t, [theta0, target_theta[-1], dtheta0, target_dtheta[-1]], tf_total)
 
-        # Control
-        Fr = m * (ddr_req + mu / r_act**2 - r_act * dtheta_act**2)
-        Ft = m * (r_act * ddtheta_req + 2 * dr_act * dtheta_act)
+    # Control
+    Fr = m * (ddr_req + mu/r_act**2 - r_act*dtheta_act**2)
+    Ft = m * (r_act*ddtheta_req + 2*dr_act*dtheta_act)
 
-        thrust_req = np.sqrt(Fr**2 + Ft**2)
-        alpha_req = np.arctan2(Ft, Fr)
+    thrust_req = np.sqrt(Fr**2 + Ft**2)
+    alpha_req = np.arctan2(Ft, Fr)
 
-        # Apply Limits
-        thrust_pct = np.clip(thrust_req / T_max, 0, 1)
+    # Apply Limits
+    thrust_pct = np.clip(thrust_req / T_max, 0, 1)
 
-        if r_act <= r_moon + 0.1:
-            thrust_pct = 0
+    if r_act <= r_moon + 0.1:
+      thrust_pct = 0
+    """
+        thrust_req, alpha_req = 0, 0
 
-    return thrust_pct, np.degrees(alpha_req)
+    return [thrust_req, alpha_req]
 
 
 def dynamics(t, S):
