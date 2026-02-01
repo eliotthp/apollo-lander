@@ -1,4 +1,4 @@
-# Apollo 11 Lunar Descent Simulation
+# Apollo Lunar Module Descent Simulation
 
 ![Language](https://img.shields.io/badge/Python-3.8%2B-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
@@ -41,7 +41,7 @@ The simulation solves the non-linear equations of motion in a polar coordinate f
 ├── visualization.py    # Plotting and telemetry reconstruction
 ├── README.md           # Project documentation
 └── .gitignore          # Python/Environment exclusion patterns
-
+```
 ## 📚 References & Data Sources
 
 This simulation relies on historical flight data and technical specifications from the following official documentation:
