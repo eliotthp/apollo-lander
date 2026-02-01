@@ -1,6 +1,6 @@
 # --- Constants & Environment ---
-G = 6.67408e-11  # m^3/kg/s^2
 G_earth = 9.81  # m/s^2
 r_moon = 1737e3  # m
+G = 6.67408e-11  # m^3/kg/s^2
 m_moon = 7.34767309e22  # kg
 mu = G * m_moon  # m^3/s^2

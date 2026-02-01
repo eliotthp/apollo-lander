@@ -3,14 +3,12 @@ from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 import controller as ctrl  # Importing the controller module
 import visualization as viz  # Importing the visualization module
-
+import enviroment as env
 
 # --- Constants & Environment ---
-G = 6.67408e-11  # m^3/kg/s^2
-G_earth = 9.81  # m/s^2
-r_moon = 1737e3  # m
-m_moon = 7.34767309e22  # kg
-mu = G * m_moon  # m^3/s^2
+G_earth = env.G_earth
+r_moon = env.r_moon
+mu = env.mu
 
 # --- Initial Conditions (From Apollo 11 Event B) ---
 r0 = r_moon + 14_878  # m

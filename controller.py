@@ -1,11 +1,11 @@
 import guidance
 import numpy as np
+import enviroment as env
 
-G = 6.67408e-11  # m^3/kg/s^2
-G_earth = 9.81  # m/s^2
-r_moon = 1737e3  # m
-m_moon = 7.34767309e22  # kg
-mu = G * m_moon  # m^3/s^2
+# --- Constants & Environment ---
+G_earth = env.G_earth
+r_moon = env.r_moon
+mu = env.mu
 
 
 def control(t, S):
