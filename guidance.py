@@ -5,6 +5,14 @@ def poly_guidance(t, S, tf):
     """
     Returns the reference position, velocity, and acceleration
     for a cubic trajectory.
+
+    Args:
+        t (float or ndarray): Current time(s).
+        S (list): Desired conditions [f(0), f(tf), df(0), df(tf)].
+        tf (float): Final time.
+
+    Returns:
+        tuple: (f, df, ddf) Position, velocity, and acceleration at time t.
     """
     # Coefficients of the polynomial
     a_mat = np.array(

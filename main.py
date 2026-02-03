@@ -38,7 +38,8 @@ while landing:
     LVLH = nav.polar_to_LVLH(S)
     alt = nav.altitude(LVLH)
     # --- Guidance ---
-
+    z_cmd, _, _ = gd.poly_guidance(t, [LVLH[0], alt, 0, 0], 500)
+    x_cmd, _, _ = gd.poly_guidance(t, [LVLH[2], 400_000, S0[3], 0], 500)
     # --- Control ---
     S = sim.propagate(h, dt, S, [0, 0])
     S_hist.append(S)
