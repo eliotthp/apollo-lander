@@ -1,6 +1,7 @@
 import numpy as np
-import controller as ct
+import navigation as nav
 import guidance as gd
+import controller as ct
 import environment as env
 import simulation as sim
 import matplotlib.pyplot as plt
@@ -31,15 +32,18 @@ S_hist = []
 t_hist = []
 # --- Main Loop ---
 while landing:
-    # Navigation
-    # Guidance
-    # Control
+    if t > 500 or S[0] < 0:
+        landing = False
+    # --- Navigation ---
+    LVLH = nav.polar_to_LVLH(S)
+    alt = nav.altitude(LVLH)
+    # --- Guidance ---
+
+    # --- Control ---
     S = sim.propagate(h, dt, S, [0, 0])
     S_hist.append(S)
     t_hist.append(t)
     t += dt
-    if t > 100 or S[0] < 0:
-        landing = False
 
 # --- Post-Simulation Analysis ---
 S_hist = np.array(S_hist)

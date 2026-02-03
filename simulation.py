@@ -6,6 +6,16 @@ mu = env.mu
 
 
 def get_derivatives(S, C):
+    """
+    Calculates the second-order derivatives of the state variables.
+
+    Args:
+        S (list): Current state vector [r, dr, theta, dtheta, m].
+        C (list): Control inputs [T, alpha] (Thrust and Pitch).
+
+    Returns:
+        list: Derivatives [ddr, ddtheta].
+    """
     # Unpack state
     r, dr, theta, dtheta, m = S
     T, alpha = C
@@ -17,6 +27,17 @@ def get_derivatives(S, C):
 
 
 def update_state(dt, S, dS):
+    """
+    Updates the state vector using Euler integration.
+
+    Args:
+        dt (float): Time step for the update.
+        S (list): Current state vector [r, dr, theta, dtheta, m].
+        dS (list): Derivatives [ddr, ddtheta].
+
+    Returns:
+        list: Updated state vector.
+    """
     # Unpack states
     r, dr, theta, dtheta, m = S
     ddr, ddtheta = dS
@@ -31,6 +52,18 @@ def update_state(dt, S, dS):
 
 
 def propagate(h, dt, S, C):
+    """
+    Propagates the state forward in time over a duration dt using a smaller step h.
+
+    Args:
+        h (float): Integration time step.
+        dt (float): Total propagation duration.
+        S (list): Initial state vector.
+        C (list): Constant control inputs for this duration.
+
+    Returns:
+        list: Final state vector after duration dt.
+    """
     # Ensure that n is exactly 100
     n = int(round(dt / h))
     for _ in range(n):
