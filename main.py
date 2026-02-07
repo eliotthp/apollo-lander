@@ -35,14 +35,14 @@ a_hist = []
 t_max = 500
 # --- Main Loop ---
 while landing:
-    if t > t_max or LVLH[0] < 0:
+    if t >= t_max or LVLH[0] <= 0:
         landing = False
-    t_go = max(t_max - t, 1e-6)
+    t_go = max(t_max - t, dt)
     # --- Navigation ---
     LVLH = nav.polar_to_LVLH(S)
     # --- Guidance ---
-    _, _, ddz_cmd = gd.poly_guidance(t, [LVLH[0], 0, LVLH[1], 0], t_go)
-    _, _, ddx_cmd = gd.poly_guidance(t, [LVLH[2], 480_000, LVLH[3], 0], t_go)
+    _, _, ddz_cmd = gd.poly_guidance(0, [LVLH[0], 0, LVLH[1], 0], t_go)
+    _, _, ddx_cmd = gd.poly_guidance(0, [LVLH[2], 480_000, LVLH[3], 0], t_go)
     # --- Control ---
     T_cmd, alpha_cmd = ct.control(t, LVLH, [ddz_cmd, ddx_cmd])
     # --- Dynamics ---
