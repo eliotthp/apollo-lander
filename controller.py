@@ -43,14 +43,21 @@ def control(t, S, targets):
 
 
 def thrust_limiter(T_cmd):
+    """
+    Limits the commanded thrust based on the Apollo Descent Propulsion System (DPS)
+    constraints: either fixed at 100% or throttleable between 10% and 65%.
+
+    Args:
+        T_cmd (float): The raw commanded thrust from the controller.
+
+    Returns:
+        T_ctrl (float): The actual thrust (N) after applying hardware limits.
+    """
     throttle = T_cmd / T_max * 100  # Throttle (%)
     if throttle >= 65:
         T_ctrl = T_max
     elif throttle >= 10:
-        if throttle >= 65:
-            T_ctrl = T_max * 0.65
-        else:
-            T_ctrl = T_max * throttle / 100
+        T_ctrl = T_max * throttle / 100
     else:
         T_ctrl = T_max * 0.1
     return T_ctrl
