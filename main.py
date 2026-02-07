@@ -4,6 +4,7 @@ import guidance as gd
 import controller as ct
 import environment as env
 import simulation as sim
+import visualization as vis
 import matplotlib.pyplot as plt
 
 # --- Constants & Environment ---
@@ -12,12 +13,6 @@ mu = env.mu
 m0 = env.m0
 
 # --- Initial Conditions (From Apollo 11 Event B) ---
-"""
-r0 = r_moon + 14_878  # m
-dr0 = -1.22  # m/s
-theta0 = np.radians(40)  # rad
-dtheta0 = -np.sqrt(mu / (r_moon + 14_878)) / (r_moon + 14_878)  # rad/s
-"""
 S0 = [14_878 + r_moon, 0, 0, np.sqrt(mu / (r_moon + 14_878)) / (r_moon + 14_878), m0]
 
 # Initialize Simulation Parameters
@@ -26,12 +21,15 @@ t = 0  # Simulation time
 dt = 1  # Loop every second
 h = dt / 100  # Plant run for accuracy
 
-# Initialize state and trackers
+# Initialize
 S = S0
 LVLH = nav.polar_to_LVLH(S0)
+# History
 S_hist = []
+LVLH_hist = []
 t_hist = []
-a_hist = []
+alpha_hist = []
+thrust_hist = []
 t_max = 500
 # --- Main Loop ---
 while landing:
@@ -47,36 +45,27 @@ while landing:
     T_cmd, alpha_cmd = ct.control(t, LVLH, [ddz_cmd, ddx_cmd])
     # --- Dynamics ---
     S = sim.propagate(h, dt, S, [T_cmd, alpha_cmd])
-    a_hist.append(alpha_cmd)
+    # --- History ---
     S_hist.append(S)
+    LVLH_hist.append(LVLH)
     t_hist.append(t)
+    alpha_hist.append(alpha_cmd)
+    thrust_hist.append(T_cmd)
     t += dt
 
 # --- Post-Simulation Analysis ---
 S_hist = np.array(S_hist)
+LVLH_hist = np.array(LVLH_hist)
 t_hist = np.array(t_hist)
 
-fig, ax = plt.subplots(2, 2)
-ax[0, 0].plot(t_hist, S_hist[:, 0] - r_moon)
-ax[0, 0].axhline(y=0, color="grey", linestyle="--")
-ax[0, 0].set_xlabel("Time (s)")
-ax[0, 0].set_ylabel("Altitude (m)")
-ax[0, 0].grid()
-
-ax[1, 0].plot(t_hist, a_hist)
-ax[1, 0].set_xlabel("Time (s)")
-ax[1, 0].set_ylabel("Pitch Angle (rad)")
-ax[1, 0].grid()
-
-ax[0, 1].plot(t_hist, S_hist[:, 1])
-ax[0, 1].set_xlabel("Time (s)")
-ax[0, 1].set_ylabel("dr (m/s)")
-ax[0, 1].grid()
-
-ax[1, 1].plot(t_hist, S_hist[:, 3])
-ax[1, 1].set_xlabel("Time (s)")
-ax[1, 1].set_ylabel("dtheta (rad/s)")
-ax[1, 1].grid()
-
-plt.tight_layout()
+vis.trajectory(S_hist[:, 2], LVLH_hist[:, 0])
+vis.telemetry(
+    t_hist,
+    [LVLH_hist[:, 1], LVLH_hist[:, 3]],
+    alpha_hist,
+    thrust_hist,
+    alpha_hist,
+    thrust_hist,
+    S_hist[:, -1],
+)
 plt.show()

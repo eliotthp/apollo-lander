@@ -24,7 +24,6 @@ def trajectory(theta, alt):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.show()
 
 
 def telemetry(
@@ -81,7 +80,6 @@ def telemetry(
     axs[1, 1].legend()
     axs[1, 1].grid(True)
     plt.tight_layout()
-    plt.show()
 
 
 def end_state_metrics(t, final_state):

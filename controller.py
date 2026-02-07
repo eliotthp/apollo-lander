@@ -8,6 +8,18 @@ mu = env.mu
 
 
 def control(t, S, targets):
+    """
+    Calculates the required thrust and pitch angle to achieve commanded accelerations.
+    With z (altitude, +up), and x (horizontal distance, +downrange)
+
+    Args:
+        t (float): Current simulation time.
+        S (list): Current LVLH state vector [z, dz, x, dx, m].
+        targets (list): Commanded accelerations [ddz_cmd, ddx_cmd].
+
+    Returns:
+        tuple: (T_cmd, alpha_cmd) Commanded thrust (N) and pitch angle (rad).
+    """
     # Unpack states
     z, dz, x, dx, m = S
     ddz_cmd, ddx_cmd = targets
