@@ -32,22 +32,26 @@ The project is under **active development**, with additional descent phases (Hig
 
 ## 📊 Simulation Visualizations
 
-*(Note: Will add screenshots of simulation data in the future (/docs))*
-
-* **Trajectory Plot:** Tracks altitude vs. downrange distance relative to the landing site.
-* **Telemetry:** Real-time logging of Pitch ($\alpha$), Thrust (%), Velocity Components, and Propellant Mass.
-* **Phase Plane:** Visualization of Radial vs. Angular velocity convergence.
+### **Trajectory Plot:**  
+![Trajectory Plot](figs/trajectory.png)  
+Tracks altitude vs. downrange distance relative to the landing site.
+### **Telemetry Plots:**  
+![Telemetry Plots](figs/telemetry.png)  
+Real-time logging of Pitch ($\alpha$), Thrust (%), Velocity Components, and Propellant Mass.
 
 ## 📂 Project Structure
 
 ```bash
-├── main.py             # Simulation loop, RK45 integrator, and event handling
-├── guidance.py         # Polynomial guidance library (Cubic Spline generation)
-├── enviroment.py       # Enviroment variables and constants
-├── controller.py       # Spaceship control logic
-├── visualization.py    # Plotting and telemetry reconstruction
-├── README.md           # Project documentation
-└── .gitignore          # Python/Environment exclusion patterns
+├── README.md
+├── controller.py
+├── environment.py
+├── guidance.py
+├── LICENSE
+├── main.py
+├── navigation.py
+├── simulation.py
+├── test.py
+└── visualization.py
 ```
 
 ## 🔧 Current Limitations
