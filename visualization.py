@@ -54,11 +54,11 @@ def telemetry(t, vel_components, alpha_cmd, thrust_cmd, alpha_ctrl, thrust_ctrl,
     axs[0, 0].grid(True)
 
     # Pitch Command vs Actual
-    axs[0, 1].plot(t, np.rad2deg(alpha_cmd), "r--", label="Pitch Command")
-    axs[0, 1].plot(t, np.rad2deg(alpha_ctrl), "b", label="Pitch Actual")
+    axs[0, 1].plot(t, -np.rad2deg(alpha_cmd), "r--", label="Pitch Command")
+    axs[0, 1].plot(t, -np.rad2deg(alpha_ctrl), "b", label="Pitch Actual")
     axs[0, 1].set_title("Pitch Angle: Command vs Actual")
     axs[0, 1].set_xlabel("Time (s)")
-    axs[0, 1].set_ylabel(r"Angle ($\degree$)")
+    axs[0, 1].set_ylabel(r"Pitch from vertical ($\degree$)")
     axs[0, 1].legend()
     axs[0, 1].grid(True)
 
