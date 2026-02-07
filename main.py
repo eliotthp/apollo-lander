@@ -29,8 +29,9 @@ S_hist = []
 LVLH_hist = []
 t_hist = []
 alpha_hist = []
-thrust_hist = []
-t_max = 500
+T_cmd_hist = []
+T_ctrl_hist = []
+t_max = 1_000
 # --- Main Loop ---
 while landing:
     if t >= t_max or LVLH[0] <= 0:
@@ -43,14 +44,16 @@ while landing:
     _, _, ddx_cmd = gd.poly_guidance(0, [LVLH[2], 480_000, LVLH[3], 0], t_go)
     # --- Control ---
     T_cmd, alpha_cmd = ct.control(t, LVLH, [ddz_cmd, ddx_cmd])
+    T_ctrl = ct.thrust_limiter(T_cmd)
     # --- Dynamics ---
-    S = sim.propagate(h, dt, S, [T_cmd, alpha_cmd])
+    S = sim.propagate(h, dt, S, [T_ctrl, alpha_cmd])
     # --- History ---
     S_hist.append(S)
     LVLH_hist.append(LVLH)
     t_hist.append(t)
     alpha_hist.append(alpha_cmd)
-    thrust_hist.append(T_cmd)
+    T_cmd_hist.append(T_cmd)
+    T_ctrl_hist.append(T_ctrl)
     t += dt
 
 # --- Post-Simulation Analysis ---
@@ -63,8 +66,9 @@ vis.telemetry(
     t_hist,
     [LVLH_hist[:, 1], LVLH_hist[:, 3]],
     alpha_hist,
-    thrust_hist,
+    T_cmd_hist,
     alpha_hist,
-    thrust_hist,
+    T_ctrl_hist,
     S_hist[:, -1],
 )
+plt.show()

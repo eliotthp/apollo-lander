@@ -27,9 +27,7 @@ def trajectory(theta, alt):
     plt.savefig("figs/trajectory.png")
 
 
-def telemetry(
-    t, vel_components, alpha_cmd, thrust_cmd, alpha_actual, thrust_actual, m_p
-):
+def telemetry(t, vel_components, alpha_cmd, thrust_cmd, alpha_ctrl, thrust_ctrl, m_p):
     """
     Generates a 2x2 grid of plots showing the vehicle's telemetry over time.
 
@@ -38,8 +36,8 @@ def telemetry(
         vel_components (list): List containing vertical (vz) and horizontal (vx) velocities.
         alpha_cmd (ndarray): Commanded pitch angle array.
         thrust_cmd (ndarray): Commanded thrust array.
-        alpha_actual (ndarray): Actual pitch angle array.
-        thrust_actual (ndarray): Actual thrust array.
+        alpha_ctrl (ndarray): Actual pitch angle array.
+        thrust_ctrl (ndarray): Actual thrust array.
         m_p (ndarray): Propellant mass array.
     """
     vz = vel_components[0]
@@ -56,8 +54,8 @@ def telemetry(
     axs[0, 0].grid(True)
 
     # Pitch Command vs Actual
-    axs[0, 1].plot(t, alpha_cmd, "r--", label="Pitch Command")
-    axs[0, 1].plot(t, alpha_actual, "b", label="Pitch Actual")
+    axs[0, 1].plot(t, np.rad2deg(alpha_cmd), "r--", label="Pitch Command")
+    axs[0, 1].plot(t, np.rad2deg(alpha_ctrl), "b", label="Pitch Actual")
     axs[0, 1].set_title("Pitch Angle: Command vs Actual")
     axs[0, 1].set_xlabel("Time (s)")
     axs[0, 1].set_ylabel(r"Angle ($\degree$)")
@@ -66,7 +64,7 @@ def telemetry(
 
     # Thrust Command vs Actual
     axs[1, 0].plot(t, thrust_cmd, "r--", label="Thrust Command")
-    axs[1, 0].plot(t, thrust_actual, "g", label="Thrust Actual")
+    axs[1, 0].plot(t, thrust_ctrl, "g", label="Thrust Actual")
     axs[1, 0].set_title("Thrust: Command vs Actual")
     axs[1, 0].set_xlabel("Time (s)")
     axs[1, 0].set_ylabel("Thrust (N)")
