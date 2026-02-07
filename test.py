@@ -13,7 +13,7 @@ S0 = [
     14_878 + r_moon,
     0,
     0,
-    -np.sqrt(mu / (r_moon + 14_878)) / (r_moon + 14_878),
+    np.sqrt(mu / (r_moon + 14_878)) / (r_moon + 14_878),
     15_240,
 ]
 
@@ -21,8 +21,8 @@ t_vec = np.linspace(0, 500, 500)
 
 LVLH = nav.polar_to_LVLH(S0)
 alt = nav.altitude(LVLH)
-z_cmd, _, _ = gd.poly_guidance(t_vec, [LVLH[0], 0, 0, 0], 500)
-x_cmd, _, _ = gd.poly_guidance(t_vec, [LVLH[2], 400_000, LVLH[3], 0], 500)
+z_cmd, _, _ = gd.poly_guidance(t_vec, [LVLH[0], 0, LVLH[1], 0], 500)
+x_cmd, _, _ = gd.poly_guidance(t_vec, [LVLH[2], 480_000, LVLH[3], 0], 500)
 
 plt.plot(x_cmd, -z_cmd)
 plt.xlabel("x (m)")

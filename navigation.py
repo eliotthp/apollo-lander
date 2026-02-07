@@ -20,8 +20,8 @@ def polar_to_LVLH(S):
     # Project to LVLH
     z = r_moon - r
     dz = -dr
-    x = r_moon * -theta
-    dx = r_moon * -dtheta
+    x = r_moon * theta
+    dx = r_moon * dtheta
     # Pack new state
     LVLH = [z, dz, x, dx, m]
     return LVLH
