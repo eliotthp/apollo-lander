@@ -11,11 +11,12 @@ def control(t, S, targets):
     # Unpack states
     z, dz, x, dx, m = S
     ddz_cmd, ddx_cmd = targets
-    # Placeholder variable
-    y = r_moon - z
+    # Calculate distance from moon center
+    r = r_moon + z
+    dtheta = dx / r
     # Components of thrust req
-    Tx = 2 * dz * dx / r_moon - ddx_cmd * y / r_moon
-    Tz = mu / y**2 - y * dx**2 / r_moon**2 - ddz_cmd
+    Tz = ddz_cmd + (mu / r**2) - (r * dtheta**2)
+    Tx = ddx_cmd + (2 * dz * dtheta)
     # Calculate control inputs
     alpha_cmd = np.arctan2(Tx, Tz)
     T_cmd = m * np.sqrt(Tx**2 + Tz**2)

@@ -28,23 +28,26 @@ h = dt / 100  # Plant run for accuracy
 
 # Initialize state and trackers
 S = S0
+LVLH = nav.polar_to_LVLH(S0)
 S_hist = []
 t_hist = []
+a_hist = []
 t_max = 500
 # --- Main Loop ---
 while landing:
-    if t > t_max or S[0] < 0:
+    if t > t_max or LVLH[0] < 0:
         landing = False
+    t_go = max(t_max - t, 1e-6)
     # --- Navigation ---
     LVLH = nav.polar_to_LVLH(S)
-    alt = nav.altitude(LVLH)
     # --- Guidance ---
-    _, _, ddz_cmd = gd.poly_guidance(t, [LVLH[0], 0, LVLH[1], 0], t_max)
-    _, _, ddx_cmd = gd.poly_guidance(t, [LVLH[2], 480_000, LVLH[3], 0], t_max)
+    _, _, ddz_cmd = gd.poly_guidance(t, [LVLH[0], 0, LVLH[1], 0], t_go)
+    _, _, ddx_cmd = gd.poly_guidance(t, [LVLH[2], 480_000, LVLH[3], 0], t_go)
     # --- Control ---
     T_cmd, alpha_cmd = ct.control(t, LVLH, [ddz_cmd, ddx_cmd])
     # --- Dynamics ---
     S = sim.propagate(h, dt, S, [T_cmd, alpha_cmd])
+    a_hist.append(alpha_cmd)
     S_hist.append(S)
     t_hist.append(t)
     t += dt
@@ -56,6 +59,14 @@ t_hist = np.array(t_hist)
 fig, ax = plt.subplots(2, 2)
 ax[0, 0].plot(t_hist, S_hist[:, 0] - r_moon)
 ax[0, 0].axhline(y=0, color="grey", linestyle="--")
+ax[0, 0].set_xlabel("Time (s)")
+ax[0, 0].set_ylabel("Altitude (m)")
+ax[0, 0].grid()
+
+ax[1, 0].plot(t_hist, a_hist)
+ax[1, 0].set_xlabel("Time (s)")
+ax[1, 0].set_ylabel("Pitch Angle (rad)")
+ax[1, 0].grid()
 
 ax[0, 1].plot(t_hist, S_hist[:, 1])
 ax[0, 1].set_xlabel("Time (s)")

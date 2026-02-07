@@ -18,25 +18,10 @@ def polar_to_LVLH(S):
     # Unpack state
     r, dr, theta, dtheta, m = S
     # Project to LVLH
-    z = r_moon - r
-    dz = -dr
-    x = r_moon * theta
-    dx = r_moon * dtheta
+    z = r - r_moon
+    dz = dr
+    x = r * theta
+    dx = r * dtheta
     # Pack new state
     LVLH = [z, dz, x, dx, m]
     return LVLH
-
-
-def altitude(LVLH):
-    """
-    Calculates the altitude above the lunar surface from LVLH coordinates.
-
-    Args:
-        LVLH (list): LVLH state vector [z, dz, x, dx].
-
-    Returns:
-        h (float): Altitude in meters.
-    """
-    z, _, _, _, _ = LVLH
-    h = -z
-    return h
