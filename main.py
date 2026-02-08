@@ -35,7 +35,7 @@ alpha_cmd_hist = []
 alpha_ctrl_hist = []
 T_cmd_hist = []
 T_ctrl_hist = []
-t_max = 900
+t_max = 714
 
 # --- Main Loop ---
 while landing:
