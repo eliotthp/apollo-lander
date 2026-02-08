@@ -3,8 +3,8 @@
 | Metric | Value |
 | :--- | :--- |
 | **Time of Flight** | `899.00 s` |
-| **Impact Velocity** | `3.54 m/s` |
-| **Delta-V** | `2261.32 m/s` |
-| **Vertical Vel** | `-3.54 m/s` |
+| **Impact Velocity** | `5.72 m/s` |
+| **Delta-V** | `2259.12 m/s` |
+| **Vertical Vel** | `-5.72 m/s` |
 | **Horizontal Vel** | `0.00 m/s` |
-| **Remaining Fuel** | `-5.18 kg` |
+| **Remaining Fuel** | `-0.00 kg` |

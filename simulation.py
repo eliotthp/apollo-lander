@@ -5,6 +5,7 @@ import environment as env
 mu = env.mu
 Isp = env.Isp
 G_earth = env.G_earth
+m_empty = env.m_empty
 
 
 def get_derivatives(S, C):
@@ -21,6 +22,8 @@ def get_derivatives(S, C):
     # Unpack state
     r, dr, theta, dtheta, m = S
     T, alpha = C
+    if m - m_empty <= 0:
+        T = 0
     # Equations of Motion
     ddr = T / m * np.cos(alpha) - mu / r**2 + r * dtheta**2
     ddtheta = 1 / r * ((T / m) * np.sin(alpha) - 2 * dr * dtheta)
