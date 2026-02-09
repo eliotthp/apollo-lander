@@ -192,11 +192,15 @@ The codebase is intentionally modular to support incremental upgrades to estimat
 
 ## 📚 References & Data Sources
 
-1. **NASA Manned Spacecraft Center**, *Apollo Lunar Descent and Ascent Trajectories*, Nov 1970  
-2. **NASA Manned Spacecraft Center**, *Mission Planning for Lunar Module Descent and Ascent*, Jun 1972  
-3. **NASA Safety & Mission Assurance**, *Apollo 11 Mission Report (Significant Incidents)*  
-4. **Aircraft Engine Historical Society**, *Lunar Module Descent Engine (LMDE)*  
-5. **Apollo Lunar Module / Descent Propulsion System**, publicly available documentation  
+1. **NASA Manned Spacecraft Center**, *Apollo Lunar Descent and Ascent Trajectories*, Nov 1970
+   [https://ntrs.nasa.gov/api/citations/19700024568/downloads/19700024568.pdf](https://ntrs.nasa.gov/api/citations/19700024568/downloads/19700024568.pdf)
+2. **NASA Manned Spacecraft Center**, *Mission Planning for Lunar Module Descent and Ascent*, Jun 1972 [https://ntrs.nasa.gov/api/citations/19720018205/downloads/19720018205.pdf](https://ntrs.nasa.gov/api/citations/19720018205/downloads/19720018205.pdf)
+2. **NASA Safety & Mission Assurance**, *Apollo 11 Mission Report (Significant Incidents)*
+   [https://sma.nasa.gov/SignificantIncidents/assets/a11_missionreport.pdf](https://sma.nasa.gov/SignificantIncidents/assets/a11_missionreport.pdf)
+3. **Aircraft Engine Historical Society**, *The Lunar Module Descent Engine (LMDE)*
+   [https://www.enginehistory.org/Rockets/RPE09.46/RPE09.46.shtml](https://www.enginehistory.org/Rockets/RPE09.46/RPE09.46.shtml)
+4. **Wikipedia Contributors**, *Apollo Lunar Module* / *Descent Propulsion System*  
+   [https://en.wikipedia.org/wiki/Apollo_Lunar_Module](https://en.wikipedia.org/wiki/Apollo_Lunar_Module)
 
 ---
 
