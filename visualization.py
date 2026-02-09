@@ -16,6 +16,7 @@ def trajectory(theta, alt):
         theta (ndarray): Array of angular positions (degrees).
         alt (ndarray): Array of altitudes (meters).
     """
+    # Create the trajectory plot showing altitude vs angular position
     plt.plot(theta, alt, label="Trajectory")
     plt.xlabel(r"Theta ($\degree$)")
     plt.ylabel("Altitude (m)")
@@ -23,6 +24,7 @@ def trajectory(theta, alt):
     plt.title("Trajectory of Lunar Module")
     plt.legend()
     plt.grid(True)
+    # Ensure layout is clean before saving to the figs directory
     plt.tight_layout()
     plt.savefig("figs/trajectory.png")
 
@@ -40,11 +42,12 @@ def telemetry(t, vel_components, alpha_cmd, thrust_cmd, alpha_ctrl, thrust_ctrl,
         thrust_ctrl (ndarray): Actual thrust array.
         m_p (ndarray): Propellant mass array.
     """
+    # Initialize a 2x2 subplot figure for comprehensive telemetry review
     vz = vel_components[0]
     vx = vel_components[1]
     fig, axs = plt.subplots(2, 2, figsize=(12, 10))
 
-    # Velocity Components
+    # Plot 1: Vertical and Horizontal velocity components
     axs[0, 0].plot(t, vz, label="Vertical Velocity")
     axs[0, 0].plot(t, vx, label="Horizontal Velocity")
     axs[0, 0].set_title("Velocity Components Over Time")
@@ -53,7 +56,7 @@ def telemetry(t, vel_components, alpha_cmd, thrust_cmd, alpha_ctrl, thrust_ctrl,
     axs[0, 0].legend()
     axs[0, 0].grid(True)
 
-    # Pitch Command vs Actual
+    # Plot 2: Compare commanded pitch vs actual vehicle pitch (converted to degrees)
     axs[0, 1].plot(t, -np.rad2deg(alpha_cmd), "r--", label="Pitch Command")
     axs[0, 1].plot(t, -np.rad2deg(alpha_ctrl), "b", label="Pitch Actual")
     axs[0, 1].set_title("Pitch Angle: Command vs Actual")
@@ -62,7 +65,7 @@ def telemetry(t, vel_components, alpha_cmd, thrust_cmd, alpha_ctrl, thrust_ctrl,
     axs[0, 1].legend()
     axs[0, 1].grid(True)
 
-    # Thrust Command vs Actual
+    # Plot 3: Compare commanded thrust vs actual thrust output
     axs[1, 0].plot(t, thrust_cmd, "r--", label="Thrust Command")
     axs[1, 0].plot(t, thrust_ctrl, "g", label="Thrust Actual")
     axs[1, 0].set_title("Thrust: Command vs Actual")
@@ -71,7 +74,7 @@ def telemetry(t, vel_components, alpha_cmd, thrust_cmd, alpha_ctrl, thrust_ctrl,
     axs[1, 0].legend()
     axs[1, 0].grid(True)
 
-    # Mass of Propellant
+    # Plot 4: Track propellant consumption over the course of the landing
     axs[1, 1].plot(t, m_p, color="purple", label="Propellant Mass")
     axs[1, 1].set_title("Propellant Mass Over Time")
     axs[1, 1].set_xlabel("Time (s)")
@@ -97,11 +100,11 @@ def end_state_metrics(t, final_state):
     Isp = env.Isp
     G_earth = env.G_earth
     m0 = env.m0
-    # Find impact velocity
+    # Calculate magnitude of the velocity vector at touchdown
     impact_velocity = np.sqrt(dzf**2 + dxf**2)
-    # Find remaining prop
+    # Determine how much fuel is left in the tanks
     remaining_propellant = mf - m_empty
-    # Calculate delta-V
+    # Use Tsiolkovsky rocket equation for total Delta-V expended
     delta_v = Isp * G_earth * np.log(m0 / mf)
 
     # Prepare the data
@@ -113,7 +116,7 @@ def end_state_metrics(t, final_state):
         "Horizontal Vel": f"{dxf:.2f} m/s",
         "Remaining Fuel": f"{remaining_propellant:.2f} kg",
     }
-    # Write to file
+    # Export results to a Markdown file for the mission report
     with open("data/MISSION_LOG.md", "w", encoding="utf-8") as f:  # Added encoding here
         f.write("### 🚀 Mission End State Metrics\n\n")
         f.write("| Metric | Value |\n")

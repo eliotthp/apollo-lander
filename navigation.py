@@ -16,13 +16,13 @@ def polar_to_LVLH(S):
     Returns:
         LVLH (list): LVLH state vector [z, dz, x, dx, m].
     """
-    # Unpack state
+    # Unpack global polar state: radius, radial velocity, angle, angular velocity, mass
     r, dr, theta, dtheta, m = S
-    # Project to LVLH
-    z = r - r_moon
-    dz = dr
-    x = r * theta
-    dx = r * dtheta
-    # Pack new state
+    # Project to LVLH: z is altitude above surface, x is arc-length downrange
+    z = r - r_moon  # Altitude (m)
+    dz = dr  # Vertical velocity (m/s)
+    x = r * theta  # Downrange distance (m)
+    dx = r * dtheta  # Horizontal velocity (m/s)
+    # Pack new state for use in guidance and control loops
     LVLH = [z, dz, x, dx, m]
     return LVLH

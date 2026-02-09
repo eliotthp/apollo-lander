@@ -23,7 +23,7 @@ t = 0  # Simulation time
 dt = 1  # Loop every second
 h = dt / 100  # Plant run for accuracy
 
-# History
+# Data logging for post-flight analysis
 S_hist = []
 LVLH_hist = []
 LVLH_nav_hist = []
@@ -34,7 +34,7 @@ T_cmd_hist = []
 T_ctrl_hist = []
 t_max = 714
 
-# Initialize
+# Initial state setup
 S = S0
 LVLH = nav.polar_to_LVLH(S0)
 alpha_ctrl = -np.pi / 2
@@ -47,21 +47,21 @@ while landing:
         landing = False
     t_go = max(t_max - t, dt)
 
-    # --- Navigation ---
+    # --- Navigation: Process sensor data to estimate state ---
     LVLH = nav.polar_to_LVLH(S)
     LVLH_nav = LVLH.copy()
     LVLH_nav[0] = altimeter.measure(LVLH[0])
 
-    # --- Guidance ---
+    # --- Guidance: Generate commanded accelerations based on target ---
     _, _, ddz_cmd = gd.poly_guidance(0, [LVLH_nav[0], 0, LVLH_nav[1], 0], t_go)
     _, _, ddx_cmd = gd.poly_guidance(0, [LVLH_nav[2], 480_000, LVLH_nav[3], 0], t_go)
 
-    # --- Control ---
+    # --- Control: Translate accelerations to actuator commands ---
     T_cmd, alpha_cmd = ct.control(t, LVLH_nav, [ddz_cmd, ddx_cmd])
     T_ctrl = ct.thrust_limiter(T_cmd)
     alpha_ctrl = ct.slew_limiter(dt, alpha_cmd, alpha_ctrl)
 
-    # --- Dynamics ---
+    # --- Dynamics: Propagate the physics model ---
     S = sim.propagate(h, dt, S, [T_ctrl, alpha_cmd])
 
     # --- History ---
@@ -81,7 +81,7 @@ LVLH_hist = np.array(LVLH_hist)
 LVLH_nav_hist = np.array(LVLH_nav_hist)
 t_hist = np.array(t_hist)
 
-# --- Visualization ---
+# --- Visualization: Generate plots and mission report ---
 plt.close("all")
 plt.plot(t_hist, LVLH_hist[:, 0])
 plt.plot(t_hist, LVLH_nav_hist[:, 0])

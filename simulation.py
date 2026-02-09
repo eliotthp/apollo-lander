@@ -22,12 +22,14 @@ def get_derivatives(S, C):
     # Unpack state
     r, dr, theta, dtheta, m = S
     T, alpha = C
+
+    # Cut thrust if propellant is exhausted
     if m - m_empty <= 0:
         T = 0
-    # Equations of Motion
+    # Equations of Motion in polar coordinates
     ddr = T / m * np.cos(alpha) - mu / r**2 + r * dtheta**2
     ddtheta = 1 / r * ((T / m) * np.sin(alpha) - 2 * dr * dtheta)
-    # Propellant Change
+    # Mass flow rate based on ideal rocket equation
     dm = -T / (Isp * G_earth)
 
     return [ddr, ddtheta, dm]
@@ -73,7 +75,7 @@ def propagate(h, dt, S, C):
     Returns:
         list: Final state vector after duration dt.
     """
-    # Ensure that n is exactly 100
+    # Calculate number of integration steps ensuring n is 100
     n = int(round(dt / h))
     for _ in range(n):
         dS = get_derivatives(S, C)

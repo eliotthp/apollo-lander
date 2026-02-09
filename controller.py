@@ -26,13 +26,17 @@ def control(t, S, targets):
     # Unpack states
     z, dz, x, dx, m = S
     ddz_cmd, ddx_cmd = targets
-    # Calculate distance from moon center
+
+    # Calculate distance from moon center and angular velocity
     r = r_moon + z
     dtheta = dx / r
-    # Components of thrust req
+
+    # Determine required thrust components in the LVLH frame
+    # Compensates for gravity and centrifugal/coriolis effects
     Tz = ddz_cmd + (mu / r**2) - (r * dtheta**2)
     Tx = ddx_cmd + (2 * dz * dtheta)
-    # Calculate control inputs
+
+    # Convert required force components to vehicle thrust and pitch angle
     if m > m_empty:
         alpha_cmd = np.arctan2(Tx, Tz)
         T_cmd = m * np.sqrt(Tx**2 + Tz**2)
@@ -55,6 +59,7 @@ def thrust_limiter(T_cmd):
         T_ctrl (float): The actual thrust (N) after applying hardware limits.
     """
     throttle = T_cmd / T_max * 100  # Throttle (%)
+    # Apollo DPS cannot throttle between 65% and 100% reliably
     if throttle >= 65:
         T_ctrl = T_max
     elif throttle >= 10:
@@ -76,8 +81,10 @@ def slew_limiter(dt, alpha_cmd, alpha_ctrl):
     Returns:
         alpha_ctrl (float): The new pitch angle (rad) after applying the slew rate limit.
     """
+    # Calculate the desired change in angle
     dalpha = -(alpha_ctrl - alpha_cmd)
     delta_alpha_max = dalpha_max * dt
+
     # Apply slew rate limit
     if abs(dalpha) > delta_alpha_max:
         alpha_ctrl += np.sign(dalpha) * delta_alpha_max
