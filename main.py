@@ -32,29 +32,36 @@ alpha_cmd_hist = []
 alpha_ctrl_hist = []
 T_cmd_hist = []
 T_ctrl_hist = []
-t_max = 714
+targets_hist = []
+t_max = 1_000
 
 # Initial state setup
 S = S0
 LVLH = nav.polar_to_LVLH(S0)
 alpha_ctrl = -np.pi / 2
+stage = 1
 # Initialize Sensors
 altimeter = sns.altimeter(0.5, 67)
-
+# Initialize Guidance
+staging = gd.Staging(1)
 # --- Main Loop ---
 while landing:
-    if t >= t_max or LVLH[0] <= 0:
-        landing = False
-    t_go = max(t_max - t, dt)
-
     # --- Navigation: Process sensor data to estimate state ---
     LVLH = nav.polar_to_LVLH(S)
+    # --- Termination Condition ---
+    if t >= t_max or LVLH[0] < 1:
+        break
     LVLH_nav = LVLH.copy()
     LVLH_nav[0] = altimeter.measure(LVLH[0])
 
     # --- Guidance: Generate commanded accelerations based on target ---
-    _, _, ddz_cmd = gd.poly_guidance(0, [LVLH_nav[0], 0, LVLH_nav[1], 0], t_go)
-    _, _, ddx_cmd = gd.poly_guidance(0, [LVLH_nav[2], 480_000, LVLH_nav[3], 0], t_go)
+    targets, t_go, stage = staging.get_guidance_targets(dt, LVLH_nav)
+    _, _, ddz_cmd = gd.poly_guidance(
+        0, [LVLH_nav[0], targets[0], LVLH_nav[1], targets[1]], t_go
+    )
+    _, _, ddx_cmd = gd.poly_guidance(
+        0, [LVLH_nav[2], targets[2], LVLH_nav[3], targets[3]], t_go
+    )
 
     # --- Control: Translate accelerations to actuator commands ---
     T_cmd, alpha_cmd = ct.control(t, LVLH_nav, [ddz_cmd, ddx_cmd])
@@ -62,7 +69,7 @@ while landing:
     alpha_ctrl = ct.slew_limiter(dt, alpha_cmd, alpha_ctrl)
 
     # --- Dynamics: Propagate the physics model ---
-    S = sim.propagate(h, dt, S, [T_ctrl, alpha_cmd])
+    S = sim.propagate(h, dt, S, [T_ctrl, alpha_ctrl])
 
     # --- History ---
     S_hist.append(S)
@@ -73,22 +80,26 @@ while landing:
     alpha_ctrl_hist.append(alpha_ctrl)
     T_cmd_hist.append(T_cmd)
     T_ctrl_hist.append(T_ctrl)
+    targets_hist.append(targets)
+    # --- Loop ---
     t += dt
 
 # --- Post-Simulation Analysis ---
 S_hist = np.array(S_hist)
 LVLH_hist = np.array(LVLH_hist)
 LVLH_nav_hist = np.array(LVLH_nav_hist)
+targets_hist = np.array(targets_hist)
 t_hist = np.array(t_hist)
 
 # --- Visualization: Generate plots and mission report ---
 plt.close("all")
 plt.plot(t_hist, LVLH_hist[:, 0])
 plt.plot(t_hist, LVLH_nav_hist[:, 0])
+plt.plot(t_hist, targets_hist[:, 0], "r--")
 plt.xlabel("Time (s)")
 plt.ylabel("Altitude (m)")
 plt.title("Altitude vs Time")
-plt.legend(["True Altitude", "Estimated Altitude"])
+plt.legend(["True Altitude", "Estimated Altitude", "Target Altitude"])
 plt.grid(True)
 plt.show()
 
