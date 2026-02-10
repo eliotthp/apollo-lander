@@ -30,14 +30,14 @@ The translational dynamics are modeled in **polar coordinates** about the Moon:
 - State vector:
 [r, dr, θ, dθ, m]
 - Central gravity:
-\[
+$\[
 \mu / r^2
-\]
+\]$
 - Full centrifugal and Coriolis coupling terms
 - Continuous propellant mass depletion:
-\[
+$\[
 \dot{m} = -\frac{T}{I_{sp} g_0}
-\]
+\]$
 
 This layer represents the **physical truth model** and is intentionally more detailed than downstream guidance and control layers, mirroring real flight architectures.
 
@@ -103,7 +103,7 @@ This produces realistic “ride-the-stop” behavior during aggressive braking p
 
 - Propellant mass decreases continuously with thrust
 - Engine shuts down at dry mass
-- Prevents nonphysical \( T/m \rightarrow \infty \) behavior
+- Prevents nonphysical $\( T/m \rightarrow \infty \)$ behavior
 
 ---
 
@@ -113,9 +113,9 @@ Rather than assuming instantaneous thrust vectoring, the simulation includes a *
 
 - Separate actuator state: `α_actual`
 - Slew-rate limiting:
-\[
+$\[
 |\dot{\alpha}| \le \dot{\alpha}_{max}
-\]
+\]$
 - The plant receives the **rate-limited** thrust direction
 
 This captures actuator realism without unnecessarily coupling rotational dynamics into the translational state.
