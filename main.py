@@ -24,15 +24,18 @@ dt = 1  # Loop every second
 h = dt / 100  # Plant run for accuracy
 
 # Data logging for post-flight analysis
-S_hist = []
-LVLH_hist = []
-LVLH_nav_hist = []
-t_hist = []
-alpha_cmd_hist = []
-alpha_ctrl_hist = []
-T_cmd_hist = []
-T_ctrl_hist = []
-targets_hist = []
+log_keys = [
+    "S",
+    "LVLH",
+    "LVLH_nav",
+    "t",
+    "alpha_cmd",
+    "alpha_ctrl",
+    "T_cmd",
+    "T_ctrl",
+    "targets",
+]
+data = {key: [] for key in log_keys}
 t_max = 1_000
 
 # Initial state setup
@@ -71,31 +74,21 @@ while landing:
     # --- Dynamics: Propagate the physics model ---
     S = sim.propagate(h, dt, S, [T_ctrl, alpha_ctrl])
 
-    # --- History ---
-    S_hist.append(S)
-    LVLH_hist.append(LVLH)
-    LVLH_nav_hist.append(LVLH_nav)
-    t_hist.append(t)
-    alpha_cmd_hist.append(alpha_cmd)
-    alpha_ctrl_hist.append(alpha_ctrl)
-    T_cmd_hist.append(T_cmd)
-    T_ctrl_hist.append(T_ctrl)
-    targets_hist.append(targets)
+    # --- Log mission data ---
+    for key in log_keys:
+        data[key].append(locals()[key])
     # --- Loop ---
     t += dt
 
 # --- Post-Simulation Analysis ---
-S_hist = np.array(S_hist)
-LVLH_hist = np.array(LVLH_hist)
-LVLH_nav_hist = np.array(LVLH_nav_hist)
-targets_hist = np.array(targets_hist)
-t_hist = np.array(t_hist)
+for key in data:
+    data[key] = np.array(data[key])
 
 # --- Visualization: Generate plots and mission report ---
 plt.close("all")
-plt.plot(t_hist, LVLH_hist[:, 0])
-plt.plot(t_hist, LVLH_nav_hist[:, 0])
-plt.plot(t_hist, targets_hist[:, 0], "r--")
+plt.plot(data["t"][:], data["LVLH"][:, 0])
+plt.plot(data["t"], data["LVLH_nav"][:, 0])
+plt.plot(data["t"], data["targets"][:, 0], "r--")
 plt.xlabel("Time (s)")
 plt.ylabel("Altitude (m)")
 plt.title("Altitude vs Time")
@@ -103,15 +96,15 @@ plt.legend(["True Altitude", "Estimated Altitude", "Target Altitude"])
 plt.grid(True)
 plt.show()
 
-vis.trajectory(S_hist[:, 2], LVLH_hist[:, 0])
+vis.trajectory(data["S"][:, 2], data["LVLH"][:, 0])
 vis.telemetry(
-    t_hist,
-    [LVLH_hist[:, 1], LVLH_hist[:, 3]],
-    alpha_cmd_hist,
-    T_cmd_hist,
-    alpha_ctrl_hist,
-    T_ctrl_hist,
-    S_hist[:, -1] - m_empty,
+    data["t"],
+    [data["LVLH"][:, 1], data["LVLH"][:, 3]],
+    data["alpha_cmd"],
+    data["T_cmd"],
+    data["alpha_ctrl"],
+    data["T_ctrl"],
+    data["S"][:, -1] - m_empty,
 )
-vis.end_state_metrics(t_hist, S_hist[-1])
+vis.end_state_metrics(data["t"], data["S"][-1])
 plt.show()
