@@ -4,6 +4,7 @@ import environment as env
 
 # --- Constants & Environment ---
 m_empty = env.m_empty
+T_max = env.T_max
 
 # In future auto-update graphs to be displayed in GitHub
 
@@ -17,6 +18,7 @@ def trajectory(theta, alt):
         alt (ndarray): Array of altitudes (meters).
     """
     # Create the trajectory plot showing altitude vs angular position
+    plt.figure(figsize=(8, 6))
     plt.plot(theta, alt, label="Trajectory")
     plt.xlabel(r"Theta ($\degree$)")
     plt.ylabel("Altitude (m)")
@@ -71,6 +73,7 @@ def telemetry(t, vel_components, alpha_cmd, thrust_cmd, alpha_ctrl, thrust_ctrl,
     axs[1, 0].set_title("Thrust: Command vs Actual")
     axs[1, 0].set_xlabel("Time (s)")
     axs[1, 0].set_ylabel("Thrust (N)")
+    axs[1, 0].set_ylim([0, T_max + T_max * 0.1])
     axs[1, 0].legend()
     axs[1, 0].grid(True)
 
