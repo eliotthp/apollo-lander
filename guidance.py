@@ -12,22 +12,27 @@ class Staging:
         # Check stage then return target
         self.stage = self.check_stage(LVLH)
         if self.stage == 1:
-            targets, t_stage = (2290, -44.2, 478_000, 0), 600
+            # Braking
+            targets, t_stage = (2_500, -50, 473_000, 150), 510
         elif self.stage == 2:
-            targets, t_stage = (156, -4.9, 479_000, 0), 50
+            # Approach
+            targets, t_stage = (150, -25, 480_000, 25), 90
         elif self.stage == 3:
-            targets, t_stage = (0, 0, self.x_hold, 0), 50
+            # Final Phase
+            targets, t_stage = (0, 0, self.x_hold, 0), 120
         t_go = max(t_stage - self.t_elapsed, dt)
         self.step(dt)
         return targets, t_go, self.stage
 
     def check_stage(self, LVLH):
         z, dz, x, dx, m = LVLH
-        # Update staging only downwards
-        if self.stage == 1 and z <= 2290:
+        # Braking
+        if self.stage == 1 and z <= 2_500:
+            # Approach
             self.stage = 2
             self.t_elapsed = 0
-        elif self.stage == 2 and abs(dx) <= 5:
+        elif self.stage == 2 and abs(dx) <= 1:
+            # Final Phase
             self.stage = 3
             self.t_elapsed = 0
             self.x_hold = x
