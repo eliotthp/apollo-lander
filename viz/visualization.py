@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import environment as env
+import config as env
 
 # --- Constants & Environment ---
 m_empty = env.m_empty

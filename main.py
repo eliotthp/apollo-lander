@@ -1,12 +1,12 @@
 import numpy as np
-import navigation as nav
-import guidance as gd
-import controller as ct
-import environment as env
-import simulation as sim
-import visualization as vis
+import config as env
+from gnc import navigation as nav
+from gnc import guidance as gd
+from gnc import control as ct
+from sim import simulation as sim
+from viz import visualization as vis
+from sensors import sensor as sns
 import matplotlib.pyplot as plt
-import sensor as sns
 
 # --- Constants & Environment ---
 r_moon = env.r_moon

@@ -1,5 +1,5 @@
 import numpy as np
-import environment as env
+import config as env
 
 # --- Constants & Environment ---
 mu = env.mu
