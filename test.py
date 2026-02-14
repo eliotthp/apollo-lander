@@ -1,9 +1,10 @@
 import config as cfg
-from state import State
+from state import PolarState
 from sim.simulation import Simulation
+from gnc.navigation import Navigation
 
 # Create initial state object
-S0 = State(
+S0 = PolarState(
     r=14_878 + cfg.r_moon,
     dr=0,
     theta=0,
@@ -13,8 +14,10 @@ S0 = State(
 
 # Pass the State object into Simulation
 simulation = Simulation(cfg, S0)
-
-for i in range(10):
+navigation = Navigation(cfg, 1, 42)
+for i in range(20):
+    navigation.step(simulation.state)
     simulation.step([0, 0], 1)
 
-print(int(simulation.state.dr))
+print(simulation.state.r - cfg.r_moon)
+print(navigation.LVLH_state.z)
