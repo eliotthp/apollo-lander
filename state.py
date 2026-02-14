@@ -3,10 +3,8 @@ from dataclasses import dataclass
 
 @dataclass
 class State:
-    x: float
-    y: float
-    z: float
-    dx: float
-    dy: float
-    dz: float
+    r: float
+    theta: float
+    dr: float
+    dtheta: float
     m: float

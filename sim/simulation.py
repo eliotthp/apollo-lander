@@ -1,30 +1,25 @@
 import numpy as np
+from state import State
 
 
 class Simulation:
-    def __init__(self, config, S0):
+    def __init__(self, config, inital_state: State):
         self.cfg = config
-        self.state = S0
+        self.state = inital_state
 
     def step(self, control, dt):
-        dstate = self._get_derivatives(self.state, control)
+        dstate = self._get_derivatives(control)
         self.state = self._euler(self.state, dstate, dt)
         return self.state
 
-    def _get_derivatives(self, S, C):
-        """
-        Calculates the second-order derivatives of the state variables.
-
-        Args:
-            S (list): Current state vector [r, dr, theta, dtheta, m].
-            C (list): Control inputs [T, alpha] (Thrust and Pitch).
-
-        Returns:
-            list: Derivatives [ddr, ddtheta].
-        """
+    def _get_derivatives(self, control):
         # Unpack state
-        r, dr, theta, dtheta, m = S
-        T, alpha = C
+        r = self.state.r
+        dr = self.state.dr
+        theta = self.state.theta
+        dtheta = self.state.dtheta
+        m = self.state.m
+        T, alpha = control
 
         # Cut thrust if propellant is exhausted
         if m - self.cfg.m_empty <= 0:
@@ -38,19 +33,13 @@ class Simulation:
         return [ddr, ddtheta, dm]
 
     def _euler(self, S, dS, dt):
-        """
-        Updates the state vector using Euler integration.
-
-        Args:
-            dt (float): Time step for the update.
-            S (list): Current state vector [r, dr, theta, dtheta, m].
-            dS (list): Derivatives [ddr, ddtheta].
-
-        Returns:
-            list: Updated state vector.
-        """
         # Unpack states
-        r, dr, theta, dtheta, m = S
+        r = self.state.r
+        dr = self.state.dr
+        theta = self.state.theta
+        dtheta = self.state.dtheta
+        m = self.state.m
+
         ddr, ddtheta, dm = dS
         # Update velocities
         dr += ddr * dt
@@ -61,4 +50,4 @@ class Simulation:
         # Update mass
         m += dm * dt
 
-        return [r, dr, theta, dtheta, m]
+        return State(r, dr, theta, dtheta, m)

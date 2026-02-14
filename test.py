@@ -1,47 +1,20 @@
-from dataclasses import dataclass
-import numpy as np
+import config as cfg
+from state import State
+from sim.simulation import Simulation
 
-
-class Dog:
-    def __init__(self, name, age):
-        self.name = name
-        self.age = age
-
-    def bark(self):
-        print("Woof!")
-
-    def __str__(self):
-        return f"{self.name} is {self.age} years old"
-
-
-Dog1 = Dog("Mooshu", 5)
-Dog1.bark()
-print(Dog1)
-
-
-@dataclass
-class VehicleInfo:
-    state: np.ndarray
-
-    @property
-    def x(self):
-        return self.state[2]
-
-    @property
-    def inverse_x(self):
-        return -self.x
-
-
-LM = VehicleInfo(
-    np.array(
-        [
-            10,
-            20,
-            30,
-            -10,
-            500,
-        ]
-    )
+# Create initial state object
+S0 = State(
+    r=14_878 + cfg.r_moon,
+    dr=0,
+    theta=0,
+    dtheta=0,
+    m=cfg.m0,
 )
 
-print(LM.inverse_x)
+# Pass the State object into Simulation
+simulation = Simulation(cfg, S0)
+
+for i in range(10):
+    simulation.step([0, 0], 1)
+
+print(int(simulation.state.dr))
