@@ -1,5 +1,5 @@
 import numpy as np
-from states import PolarState
+from states import PolarState, ControlState
 
 
 class Simulation:
@@ -11,16 +11,13 @@ class Simulation:
         dstate = self._get_derivatives(control)
         self._euler(dstate, dt)
 
-    def _get_derivatives(self, control):
-        # Unpack state
-        T, alpha = control
-
+    def _get_derivatives(self, control: ControlState):
         # Cut thrust if propellant is exhausted
         if self.state.m - self.cfg.m_empty <= 0:
-            T = 0
+            control.T_ctrl = 0
         # Equations of Motion in polar coordinates
         ddr = (
-            T / self.state.m * np.cos(alpha)
+            control.T_ctrl / self.state.m * np.cos(control.alpha_ctrl)
             - self.cfg.mu / self.state.r**2
             + self.state.r * self.state.dtheta**2
         )
@@ -28,12 +25,12 @@ class Simulation:
             1
             / self.state.r
             * (
-                (T / self.state.m) * np.sin(alpha)
+                (control.T_ctrl / self.state.m) * np.sin(control.alpha_ctrl)
                 - 2 * self.state.dr * self.state.dtheta
             )
         )
         # Mass flow rate based on ideal rocket equation
-        dm = -T / (self.cfg.Isp * self.cfg.G_earth)
+        dm = -control.T_ctrl / (self.cfg.Isp * self.cfg.G_earth)
 
         return [ddr, ddtheta, dm]
 

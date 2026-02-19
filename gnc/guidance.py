@@ -5,7 +5,7 @@ from states import GuidanceState, LVLHState
 class Guidance:
     def __init__(self):
         # stage: current staging level, targets: staging targets (z, dz, x, dx, t_stage)
-        self.guidance_state = GuidanceState()
+        self.guidance_state = GuidanceState(0, 0, 0, 0, 0, 0, 1, 0, 0)
         self.x_hold = None
 
     def step(self, dt: float, LVLH: LVLHState):

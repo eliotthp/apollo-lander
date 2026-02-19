@@ -1,4 +1,4 @@
-from states import LVLHState, ControlState
+from states import LVLHState, ControlState, GuidanceState
 import numpy as np
 
 
@@ -7,16 +7,14 @@ class Control:
         self.cfg = config
         self.control_state = control_state
 
-    def step(self, dt, nav_state: LVLHState, guid_accel):
-        # Unpack guidance acceleration targets
-        ddz_cmd, ddx_cmd = guid_accel
+    def step(self, dt, nav_state: LVLHState, guid_state: GuidanceState):
         # Calculate distance from moon center and angular velocity
         r = self.cfg.r_moon + nav_state.z
         dtheta = nav_state.dx / r
         # Determine required thrust components in the LVLH frame
         # Compensates for gravity and centrifugal/coriolis effects
-        Tz = ddz_cmd + (self.cfg.mu / r**2) - (r * dtheta**2)
-        Tx = ddx_cmd + (2 * nav_state.dz * dtheta)
+        Tz = guid_state.ddz + (self.cfg.mu / r**2) - (r * dtheta**2)
+        Tx = guid_state.ddx + (2 * nav_state.dz * dtheta)
 
         self.control_state.alpha_cmd = np.arctan2(Tx, Tz)
         self.control_state.T_cmd = nav_state.m * np.sqrt(Tx**2 + Tz**2)
