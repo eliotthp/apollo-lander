@@ -1,17 +1,18 @@
 import numpy as np
 from states import PolarState, ControlState
+from config import Config
 
 
 class Simulation:
-    def __init__(self, config, inital_state: PolarState):
+    def __init__(self, config: Config, inital_state: PolarState) -> None:
         self.cfg = config
         self.state = inital_state
 
-    def step(self, dt, control):
+    def step(self, dt: float, control: ControlState) -> None:
         dstate = self._get_derivatives(control)
         self._euler(dstate, dt)
 
-    def _get_derivatives(self, control: ControlState):
+    def _get_derivatives(self, control: ControlState) -> list[float]:
         # Cut thrust if propellant is exhausted
         if self.state.m - self.cfg.m_empty <= 0:
             control.T_ctrl = 0
@@ -34,7 +35,7 @@ class Simulation:
 
         return [ddr, ddtheta, dm]
 
-    def _euler(self, dstate, dt):
+    def _euler(self, dstate: list[float], dt: float) -> None:
         # Unpack derivatives
         ddr, ddtheta, dm = dstate
         # Update velocities

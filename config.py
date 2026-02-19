@@ -1,3 +1,18 @@
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class Config:
+    mu: float
+    r_moon: float
+    m0: float
+    m_empty: float
+    T_max: float
+    Isp: float
+    dalpha_max: float
+    G_earth: float
+
+
 # --- Lunar Environment Constants ---
 G_earth = 9.81  # Standard gravity on Earth (m/s^2) for Isp calculations
 r_moon = 1737e3  # Mean radius of the Moon (m)
@@ -13,3 +28,6 @@ m_prop0 = 8_134  # Initial propellant mass (kg)
 m0 = m_prop0 + m_empty  # Total initial wet mass (kg)
 alpha0 = 0  # Initial pitch angle (rad)
 dalpha_max = 0.10472  # Maximum gimbal/slew rate (rad/s) (~6 deg/s)
+
+
+cfg = Config(mu, r_moon, m0, m_empty, T_max, Isp, dalpha_max, G_earth)

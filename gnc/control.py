@@ -1,13 +1,16 @@
 from states import LVLHState, ControlState, GuidanceState
+from config import Config
 import numpy as np
 
 
 class Control:
-    def __init__(self, config, control_state: ControlState):
+    def __init__(self, config: Config, control_state: ControlState):
         self.cfg = config
         self.control_state = control_state
 
-    def step(self, dt, nav_state: LVLHState, guid_state: GuidanceState):
+    def step(
+        self, dt: float, nav_state: LVLHState, guid_state: GuidanceState
+    ) -> ControlState:
         # Calculate distance from moon center and angular velocity
         r = self.cfg.r_moon + nav_state.z
         dtheta = nav_state.dx / r
@@ -30,7 +33,7 @@ class Control:
 
         return self.control_state
 
-    def _propellant_limit(self, m):
+    def _propellant_limit(self, m: float):
         if m > self.cfg.m_empty:
             pass
         else:
@@ -47,7 +50,7 @@ class Control:
         else:
             self.control_state.T_ctrl = self.cfg.T_max * 0.1
 
-    def _slew_limiter(self, dt):
+    def _slew_limiter(self, dt: float):
         # Calculate the desired change in angle
         dalpha = -(self.control_state.alpha_ctrl - self.control_state.alpha_cmd)
         delta_alpha_max = self.cfg.dalpha_max * dt

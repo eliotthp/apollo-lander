@@ -3,12 +3,12 @@ from states import GuidanceState, LVLHState
 
 
 class Guidance:
-    def __init__(self):
+    def __init__(self) -> None:
         # stage: current staging level, targets: staging targets (z, dz, x, dx, t_stage)
         self.guidance_state = GuidanceState(0, 0, 0, 0, 0, 0, 1, 0, 0)
         self.x_hold = None
 
-    def step(self, dt: float, LVLH: LVLHState):
+    def step(self, dt: float, LVLH: LVLHState) -> GuidanceState:
         self.guidance_state.t_elapsed += dt
         # Check stage
         self._check_stage(LVLH)
@@ -35,7 +35,7 @@ class Guidance:
 
         return self.guidance_state
 
-    def _check_stage(self, LVLH) -> None:
+    def _check_stage(self, LVLH: LVLHState) -> None:
         # Braking
         if self.guidance_state.stage == 1 and LVLH.z <= 2_500:
             # Approach
@@ -47,7 +47,7 @@ class Guidance:
             self.guidance_state.t_elapsed = 0
             self.x_hold = LVLH.x
 
-    def _get_guidance_targets(self, dt, LVLH) -> None:
+    def _get_guidance_targets(self, dt: float, LVLH: LVLHState) -> None:
         if self.guidance_state.stage == 1:
             # Braking
             self.guidance_state.z = 2_500
@@ -70,7 +70,9 @@ class Guidance:
             self.guidance_state.dx = 0
             self.guidance_state.t_stage = 120
 
-    def _poly_guidance(self, t, tf, f0, ff, df0, dff) -> tuple:
+    def _poly_guidance(
+        self, t: float, tf: float, f0: float, ff: float, df0: float, dff: float
+    ) -> tuple[float, float, float]:
         # Set up the system of equations: M * coeffs = [f(0), f(tf), df(0), df(tf)]
         # The matrix represents the polynomial terms at t=0 and t=tf
         a_mat = np.array(
@@ -81,7 +83,7 @@ class Guidance:
                 [3 * tf**2, 2 * tf, 1, 0],
             ]
         )
-        b_vec = f0, ff, df0, dff
+        b_vec = [f0, ff, df0, dff]
 
         # Solve for the polynomial coefficients [a, b, c, d]
         coeffs = np.linalg.solve(a_mat, b_vec)

@@ -1,14 +1,15 @@
-from states import LVLHState, PolarState
 import numpy as np
+from states import LVLHState, PolarState
+from config import Config
 
 
 class Navigation:
-    def __init__(self, config, bias, seed):
+    def __init__(self, config: Config, bias: float, seed: int):
         self.cfg = config
         self.bias = bias
         self.rng = np.random.default_rng(seed)
 
-    def step(self, polar_state: PolarState):
+    def step(self, polar_state: PolarState) -> LVLHState:
         self.LVLH_state = self._polar_to_LVLH(polar_state)
         z_meas = self._measure(self.LVLH_state.z)
         return LVLHState(
@@ -19,14 +20,14 @@ class Navigation:
             self.LVLH_state.m,
         )
 
-    def _measure(self, z_true):
+    def _measure(self, z_true: float) -> float:
         # Calculate standard deviation based on Apollo-like landing radar specs
         σ_z = (0.015 * z_true + 1.52) / 3  # 1σ noise
         n = self.rng.normal(0, σ_z)  # One noise sample
         z_meas = z_true + self.bias + n
         return z_meas
 
-    def _polar_to_LVLH(self, polar_state):
+    def _polar_to_LVLH(self, polar_state: PolarState) -> LVLHState:
         # Project to LVLH: z is altitude above surface, x is arc-length downrange
         z = polar_state.r - self.cfg.r_moon  # Altitude (m)
         dz = polar_state.dr  # Vertical velocity (m/s)
