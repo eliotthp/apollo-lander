@@ -13,9 +13,6 @@ class Simulation:
         self._euler(dstate, dt)
 
     def _get_derivatives(self, control: ControlState) -> list[float]:
-        # Cut thrust if propellant is exhausted
-        if self.state.m - self.cfg.m_empty <= 0:
-            control.T_ctrl = 0
         # Equations of Motion in polar coordinates
         ddr = (
             control.T_ctrl / self.state.m * np.cos(control.alpha_ctrl)

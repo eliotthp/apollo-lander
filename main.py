@@ -1,3 +1,4 @@
+import time
 import numpy as np
 import config as cfg
 from telemetry import Logger
@@ -26,7 +27,7 @@ S0 = PolarState(
     m=cfg.m0,
 )
 landing = True
-dt = 0.1
+dt = 0.01
 t = 0
 t_max = 1000
 
@@ -50,6 +51,7 @@ logger = Logger(
 )
 
 # --- Main Loop ---
+start = time.time()
 while landing:
     # Navigation Step
     nav_state = nav.step(sim.state)
@@ -72,9 +74,14 @@ while landing:
 
     t += dt
 
+end = time.time()
+real_t = end - start
+
 # --- Printing Results ---
 print("--- Results ---")
 print(f"Time: {t:.2f} s")
+print(f"Real Time: {real_t:.2f} s")
+print(f"Effective sim speed (x real time) {t / real_t:.2f}")
 print(f"Final Altitude: {sim.state.r - cfg.r_moon:.2f} m")
 print(
     f"Final Velocity: {np.sqrt(sim.state.dr**2 + (sim.state.dtheta * sim.state.r) ** 2):.2f} m/s"
@@ -135,7 +142,7 @@ axs[1, 1].grid(True)
 
 time_stages = find_stage_change(logger.records["t_elapsed"])
 
-for time in [time_stages[0], time_stages[1]]:
+for time_stage in [time_stages[0], time_stages[1]]:
     for ax_row in axs:
         for ax in ax_row:
             ax.axvline(time, color="k", linestyle="--", alpha=0.5)
