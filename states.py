@@ -4,8 +4,8 @@ from dataclasses import dataclass
 @dataclass
 class PolarState:
     r: float
-    theta: float
     dr: float
+    theta: float
     dtheta: float
     m: float
 

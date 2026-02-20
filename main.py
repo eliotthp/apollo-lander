@@ -27,8 +27,8 @@ S0 = PolarState(
     m=cfg.m0,
 )
 landing = True
-dt = 0.01
 t = 0
+dt = 0.1
 t_max = 1000
 
 nav = Navigation(cfg, 1, 42)
@@ -62,15 +62,15 @@ while landing:
     # Control Step
     control_state = ct.step(dt, nav_state, guid_state)
 
-    # Check landing
-    if sim.state.r - cfg.r_moon < 0 or t > t_max:
-        landing = False
-
     # Logging
     logger.log(t, nav_state, guid_state, control_state)
 
     # Simulation Step
-    sim.step(dt, control_state)
+    for i in range(1, 11):
+        # Check landing
+        if sim.state.r - cfg.r_moon < 0 or t > t_max:
+            landing = False
+        sim.step(dt / 10, control_state)
 
     t += dt
 
@@ -83,9 +83,9 @@ print(f"Time: {t:.2f} s")
 print(f"Real Time: {real_t:.2f} s")
 print(f"Effective sim speed (x real time) {t / real_t:.2f}")
 print(f"Final Altitude: {sim.state.r - cfg.r_moon:.2f} m")
-print(
-    f"Final Velocity: {np.sqrt(sim.state.dr**2 + (sim.state.dtheta * sim.state.r) ** 2):.2f} m/s"
-)
+v_final = np.sqrt(sim.state.dr**2 + (sim.state.dtheta * sim.state.r) ** 2)
+print(f"Final Velocity: {v_final:.2f} m/s")
+print(f"--- Safe Landing: {v_final < 5} ---")
 
 
 # --- Plotting ---
@@ -142,9 +142,9 @@ axs[1, 1].grid(True)
 
 time_stages = find_stage_change(logger.records["t_elapsed"])
 
-for time_stage in [time_stages[0], time_stages[1]]:
+for i in [time_stages[0], time_stages[1]]:
     for ax_row in axs:
         for ax in ax_row:
-            ax.axvline(time, color="k", linestyle="--", alpha=0.5)
+            ax.axvline(i, color="k", linestyle="--", alpha=0.5)
 
 plt.savefig("figs/telemetry.png")
