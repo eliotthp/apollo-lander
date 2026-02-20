@@ -39,10 +39,12 @@ class Guidance:
         # Braking
         if self.guidance_state.stage == 1 and LVLH.z <= 2_500:
             # Approach
+            print(f"Approach Stage after {self.guidance_state.t_elapsed:.2f} s")
             self.guidance_state.stage = 2
             self.guidance_state.t_elapsed = 0
-        elif self.guidance_state.stage == 2 and abs(LVLH.dx) <= 1:
+        elif self.guidance_state.stage == 2 and abs(LVLH.dx) <= 1 and LVLH.z <= 150:
             # Final Phase
+            print(f"Final Stage after {self.guidance_state.t_elapsed:.2f} s")
             self.guidance_state.stage = 3
             self.guidance_state.t_elapsed = 0
             self.x_hold = LVLH.x
@@ -51,17 +53,17 @@ class Guidance:
         if self.guidance_state.stage == 1:
             # Braking
             self.guidance_state.z = 2_500
-            self.guidance_state.dz = -50
-            self.guidance_state.x = 473_000
-            self.guidance_state.dx = 150
-            self.guidance_state.t_stage = 510
+            self.guidance_state.dz = 0
+            self.guidance_state.x = 480_000
+            self.guidance_state.dx = 0
+            self.guidance_state.t_stage = 650
         elif self.guidance_state.stage == 2:
             # Approach
-            self.guidance_state.z = 150
-            self.guidance_state.dz = -25
+            self.guidance_state.z = 0
+            self.guidance_state.dz = 0
             self.guidance_state.x = 480_000
-            self.guidance_state.dx = 25
-            self.guidance_state.t_stage = 90
+            self.guidance_state.dx = 0
+            self.guidance_state.t_stage = 140
         elif self.guidance_state.stage == 3:
             # Final Phase
             self.guidance_state.z = 0
