@@ -76,9 +76,12 @@ $$\begin{align}
    \end{bmatrix}
 \end{align}$$
 
-
-- \[$ z = r - r_{moon} $\]
-- \[$ x = r \cdot \theta $\]
+- \[
+      $z = r - r_{moon}$
+  \]
+- \[
+      $x = r \cdot \theta$
+  \]
 
 Guidance and control operate exclusively in LVLH coordinates.
 
@@ -88,8 +91,8 @@ Guidance and control operate exclusively in LVLH coordinates.
 
 Guidance computes commanded accelerations:
 
-- \($ \ddot{z}_{cmd} $\)
-- \($ \ddot{x}_{cmd} $\)
+- \($\ddot{z}_{cmd}$\)
+- \($\ddot{x}_{cmd}$\)
 
 A cubic polynomial is solved each cycle using boundary conditions on position and velocity. Time-to-go is stage-dependent.
 
