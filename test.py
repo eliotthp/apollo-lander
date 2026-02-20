@@ -1,23 +1,34 @@
+from gnc import navigation, guidance, control
+from sim import simulation
+from states import PolarState, LVLHState, ControlState, GuidanceState
 import config as cfg
-from state import PolarState
-from sim.simulation import Simulation
-from gnc.navigation import Navigation
 
-# Create initial state object
-S0 = PolarState(
-    r=14_878 + cfg.r_moon,
-    dr=0,
-    theta=0,
-    dtheta=0,
-    m=cfg.m0,
-)
+# Testing File to Verify code functionality
 
-# Pass the State object into Simulation
-simulation = Simulation(cfg, S0)
-navigation = Navigation(cfg, 1, 42)
-for i in range(20):
-    navigation.step(simulation.state)
-    simulation.step([0, 0], 1)
+# Test Polar -> LVLH
+nav = navigation.Navigation(cfg, 0, 0)
+polar_state = PolarState(cfg.r_moon + 1000, -10, 0, 0, 0)
 
-print(simulation.state.r - cfg.r_moon)
-print(navigation.LVLH_state.z)
+lvlh_state = nav._polar_to_LVLH(polar_state)
+
+print(lvlh_state == LVLHState(1000, -10, 0, 0, 0))
+
+# Test Zero-Thrust -> No Mass Change
+m_initial = 10
+dt = 1
+
+ctrl = ControlState(0, 0, 0, 0)
+sim = simulation.Simulation(cfg, PolarState(100, 0, 0, 0, m_initial))
+
+for i in range(10):
+    sim.step(dt, ctrl)
+
+print(sim.state.m == m_initial)
+
+# Test Thrust Limiter Behavior
+ctrl_state = ControlState(10 * cfg.T_max, 0, 0, 0)
+
+ctrl = control.Control(cfg, ctrl_state)
+ctrl._thrust_limiter()
+
+print(ctrl.control_state.T_ctrl == cfg.T_max)
