@@ -124,29 +124,14 @@ This captures actuator realism without unnecessarily coupling rotational dynamic
 
 ## 📊 Telemetry, Visualization & Verification
 
-### Trajectory Visualization
-![Trajectory Plot](figs/trajectory.png)
-
-Tracks altitude versus downrange distance relative to the landing site.
-
-### Telemetry Outputs
+### Telemetry Data
 ![Telemetry Plots](figs/telemetry.png)
 
 Logged throughout descent:
+- Altitude vs. time
 - Vertical and horizontal velocity
 - Commanded vs. actual pitch angle
 - Commanded vs. actual thrust
-- Propellant mass remaining
-
-### Mission End-State Metrics
-
-Each run produces an automated mission log including:
-- Time of flight
-- Impact velocity
-- ΔV expended
-- Remaining propellant
-
-See the latest results in the [Mission Log](./data/MISSION_LOG.md).
 
 ---
 

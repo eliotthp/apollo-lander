@@ -76,7 +76,9 @@ while landing:
 print("--- Results ---")
 print(f"Time: {t:.2f} s")
 print(f"Final Altitude: {sim.state.r - cfg.r_moon:.2f} m")
-print(f"Final Velocity: {np.sqrt(sim.state.dr**2 + sim.state.dtheta**2):.2f} m/s")
+print(
+    f"Final Velocity: {np.sqrt(sim.state.dr**2 + (sim.state.dtheta * sim.state.r) ** 2):.2f} m/s"
+)
 
 
 # --- Plotting ---
@@ -133,9 +135,9 @@ axs[1, 1].grid(True)
 
 time_stages = find_stage_change(logger.records["t_elapsed"])
 
-"""for time in [time_stages]:
+for time in [time_stages[0], time_stages[1]]:
     for ax_row in axs:
         for ax in ax_row:
-            ax.axvline(time, color="k", linestyle="--", alpha=0.5)"""
+            ax.axvline(time, color="k", linestyle="--", alpha=0.5)
 
-plt.show()
+plt.savefig("figs/telemetry.png")
