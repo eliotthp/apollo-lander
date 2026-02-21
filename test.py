@@ -2,6 +2,7 @@ from gnc import navigation, guidance, control
 from sim import simulation
 from states import PolarState, LVLHState, ControlState, GuidanceState
 import config as cfg
+import matplotlib.pyplot as plt
 
 # Testing File to Verify code functionality
 
@@ -32,3 +33,14 @@ ctrl = control.Control(cfg, ctrl_state)
 ctrl._thrust_limiter()
 
 print(ctrl.control_state.T_ctrl == cfg.T_max)
+
+# Test Filtering
+nav = navigation.Navigation(cfg, 0, 0)
+nav_log = []
+for i in range(20):
+    nav_state = nav.step(dt=1, polar_state=PolarState(1000 + cfg.r_moon, 0, 0, 0, 0))
+    nav_log.append(nav_state.z)
+plt.figure()
+plt.plot([i for i in range(20)], nav_log)
+plt.axhline(y=1000, color="r")
+plt.show()

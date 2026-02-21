@@ -7,7 +7,7 @@ from gnc.guidance import Guidance
 from gnc.control import Control
 from sim.simulation import Simulation
 import matplotlib.pyplot as plt
-from states import PolarState, ControlState
+from states import ControlState
 
 
 def find_stage_change(t_elapsed: list[float]) -> list[float]:
@@ -19,13 +19,6 @@ def find_stage_change(t_elapsed: list[float]) -> list[float]:
 
 
 # --- Initial Conditions (From Apollo 11 Event B) ---
-S0 = PolarState(
-    r=14_878 + cfg.r_moon,
-    dr=0,
-    theta=0,
-    dtheta=np.sqrt(cfg.mu / (cfg.r_moon + 14_878)) / (cfg.r_moon + 14_878),
-    m=cfg.m0,
-)
 landing = True
 t = 0
 dt = 0.1
@@ -34,10 +27,12 @@ t_max = 1000
 nav = Navigation(cfg, 1, 42)
 gd = Guidance()
 ct = Control(cfg, ControlState(0, -np.pi / 2, 0, -np.pi / 2))
-sim = Simulation(cfg, S0)
+sim = Simulation(cfg, cfg.S0)
 logger = Logger(
     [
         "t",
+        "r",
+        "dr",
         "z",
         "dz",
         "x",
@@ -54,28 +49,29 @@ logger = Logger(
 start = time.time()
 while landing:
     # Navigation Step
-    nav_state = nav.step(sim.state)
+    nav_state = nav.step(dt, sim.state)
 
     # Guidance Step
     guid_state = gd.step(dt, nav_state)
 
     # Control Step
-    control_state = ct.step(dt, nav_state, guid_state)
+    ctrl_state = ct.step(dt, nav_state, guid_state)
 
     # Logging
-    logger.log(t, nav_state, guid_state, control_state)
+    logger.log(t, nav_state, guid_state, ctrl_state, sim.state)
 
     # Simulation Step
     for i in range(1, 11):
         # Check landing
         if sim.state.r - cfg.r_moon < 0 or t > t_max:
             landing = False
-        sim.step(dt / 10, control_state)
+        sim.step(dt / 10, ctrl_state)
 
     t += dt
-
 end = time.time()
+
 real_t = end - start
+delta_V = cfg.Isp * cfg.G_earth * np.log(cfg.m0 / sim.state.m)
 
 # --- Printing Results ---
 print("--- Results ---")
@@ -85,6 +81,7 @@ print(f"Effective sim speed (x real time) {t / real_t:.2f}")
 print(f"Final Altitude: {sim.state.r - cfg.r_moon:.2f} m")
 v_final = np.sqrt(sim.state.dr**2 + (sim.state.dtheta * sim.state.r) ** 2)
 print(f"Final Velocity: {v_final:.2f} m/s")
+print(f"Delta-V: {delta_V:.2f} m/s")
 print(f"--- Safe Landing: {v_final < 5} ---")
 
 
@@ -148,3 +145,34 @@ for i in [time_stages[0], time_stages[1]]:
             ax.axvline(i, color="k", linestyle="--", alpha=0.5)
 
 plt.savefig("figs/telemetry.png")
+
+r_array = np.array(logger.records["r"])
+dr_array = np.array(logger.records["dr"])
+z_array = np.array(logger.records["z"])
+dz_array = np.array(logger.records["dz"])
+
+plt.figure(figsize=(8, 6))
+plt.plot(
+    logger.records["t"],
+    r_array - cfg.r_moon - z_array,
+    label="Error between Radar and True Position",
+)
+plt.plot(
+    logger.records["t"],
+    dr_array - dz_array,
+    label="Error between Radar and True Velocity",
+)
+plt.xlabel("Time (s)")
+plt.ylabel("Error (m)")
+plt.title("Error between Radar and True Position over Time | Filtered")
+plt.legend()
+plt.grid(True)
+plt.plot()
+plt.show()
+
+# Calculate RMS
+rms_r = np.sqrt(np.mean((r_array - cfg.r_moon - z_array) ** 2))
+rms_dr = np.sqrt(np.mean((dr_array - dz_array) ** 2))
+
+print(f"RMS Error in Position: {rms_r:.5f} m")
+print(f"RMS Error in Velocity: {rms_dr:.5f} m/s")

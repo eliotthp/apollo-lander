@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from states import PolarState
+import numpy as np
 
 
 @dataclass(frozen=True)
@@ -11,6 +13,7 @@ class Config:
     Isp: float
     dalpha_max: float
     G_earth: float
+    S0: PolarState
 
 
 # --- Lunar Environment Constants ---
@@ -29,5 +32,13 @@ m0 = m_prop0 + m_empty  # Total initial wet mass (kg)
 alpha0 = 0  # Initial pitch angle (rad)
 dalpha_max = 0.10472  # Maximum gimbal/slew rate (rad/s) (~6 deg/s)
 
+# --- Lunar Module (LM) Initial Conditions ---
+S0 = PolarState(
+    r=14_878 + r_moon,
+    dr=0,
+    theta=0,
+    dtheta=np.sqrt(mu / (r_moon + 14_878)) / (r_moon + 14_878),
+    m=m0,
+)
 
-cfg = Config(mu, r_moon, m0, m_empty, T_max, Isp, dalpha_max, G_earth)
+cfg = Config(mu, r_moon, m0, m_empty, T_max, Isp, dalpha_max, G_earth, S0)

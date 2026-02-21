@@ -1,4 +1,4 @@
-from states import LVLHState, GuidanceState, ControlState
+from states import LVLHState, GuidanceState, ControlState, PolarState
 
 
 class Logger:
@@ -6,9 +6,16 @@ class Logger:
         self.records: dict[str, list[float]] = {k: [] for k in desired_keys}
 
     def log(
-        self, t: float, lvlh: LVLHState, guid: GuidanceState, ctrl: ControlState
+        self,
+        t: float,
+        lvlh: LVLHState,
+        guid: GuidanceState,
+        ctrl: ControlState,
+        plr: PolarState,
     ) -> None:
         self.records["t"].append(t)
+        self.records["r"].append(plr.r)
+        self.records["dr"].append(plr.dr)
         self.records["z"].append(lvlh.z)
         self.records["dz"].append(lvlh.dz)
         self.records["x"].append(lvlh.x)
