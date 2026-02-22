@@ -31,6 +31,7 @@ sim = Simulation(cfg, cfg.S0)
 logger = Logger(
     [
         "t",
+        "m",
         "r",
         "dr",
         "z",
@@ -86,7 +87,7 @@ print(f"--- Safe Landing: {v_final < 5} ---")
 
 
 # --- Plotting ---
-fig, axs = plt.subplots(2, 2, figsize=(10, 8))
+fig, axs = plt.subplots(2, 3, figsize=(16, 8))
 fig.suptitle("Descent Simulation Telemetry")
 fig.subplots_adjust(
     bottom=0.08, left=0.08, right=0.92, top=0.92, wspace=0.22, hspace=0.22
@@ -137,6 +138,16 @@ axs[1, 1].set_ylabel("Pitch Angle (degrees)")
 axs[1, 1].legend()
 axs[1, 1].grid(True)
 
+axs[0, 2].plot(
+    logger.records["t"],
+    np.array(logger.records["m"]) - cfg.m_empty,
+    label="Mass of Propellant",
+)
+axs[0, 2].set_title("Propellant Mass vs. Time")
+axs[0, 2].set_xlabel("Time (s)")
+axs[0, 2].set_ylabel("Propellant Mass (kg)")
+axs[0, 2].grid(True)
+
 time_stages = find_stage_change(logger.records["t_elapsed"])
 
 for i in [time_stages[0], time_stages[1]]:
@@ -151,23 +162,22 @@ dr_array = np.array(logger.records["dr"])
 z_array = np.array(logger.records["z"])
 dz_array = np.array(logger.records["dz"])
 
-plt.figure(figsize=(8, 6))
-plt.plot(
+axs[1, 2].plot(
     logger.records["t"],
     r_array - cfg.r_moon - z_array,
-    label="Error between Radar and True Position",
+    label="Position",
 )
-plt.plot(
+axs[1, 2].plot(
     logger.records["t"],
     dr_array - dz_array,
-    label="Error between Radar and True Velocity",
+    label="Velocity",
 )
-plt.xlabel("Time (s)")
-plt.ylabel("Error (m)")
-plt.title("Error between Radar and True Position over Time | Filtered")
-plt.legend()
-plt.grid(True)
-plt.plot()
+axs[1, 2].set_xlabel("Time (s)")
+axs[1, 2].set_ylabel("Error (m)")
+axs[1, 2].set_title("Error between Radar and True z-Quantities over Time | Filtered")
+axs[1, 2].legend()
+axs[1, 2].grid(True)
+axs[1, 2].plot()
 plt.show()
 
 # Calculate RMS

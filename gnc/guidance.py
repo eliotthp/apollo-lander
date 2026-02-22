@@ -68,7 +68,7 @@ class Guidance:
             # Final Phase
             self.guidance_state.z = 0
             self.guidance_state.dz = 0
-            self.guidance_state.x = self.x_hold
+            self.guidance_state.x = 480_000
             self.guidance_state.dx = 0
             self.guidance_state.t_stage = 120
 

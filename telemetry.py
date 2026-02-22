@@ -14,6 +14,7 @@ class Logger:
         plr: PolarState,
     ) -> None:
         self.records["t"].append(t)
+        self.records["m"].append(plr.m)
         self.records["r"].append(plr.r)
         self.records["dr"].append(plr.dr)
         self.records["z"].append(lvlh.z)
