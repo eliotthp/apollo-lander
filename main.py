@@ -1,13 +1,15 @@
+# External Libraries
 import time
 import numpy as np
+import matplotlib.pyplot as plt
 import config as cfg
+
+# Internal Libraries
 from telemetry import Logger
 from gnc.navigation import Navigation
 from gnc.guidance import Guidance
 from gnc.control import Control
 from sim.simulation import Simulation
-import matplotlib.pyplot as plt
-from states import ControlState
 
 
 def find_stage_change(t_elapsed: list[float]) -> list[float]:
@@ -26,7 +28,7 @@ t_max = 1000
 
 nav = Navigation(cfg, 1, 42)
 gd = Guidance()
-ct = Control(cfg, ControlState(0, -np.pi / 2, 0, -np.pi / 2))
+ct = Control(cfg, cfg.C0)
 sim = Simulation(cfg, cfg.S0)
 logger = Logger(
     [
@@ -62,11 +64,9 @@ while landing:
     logger.log(t, nav_state, guid_state, ctrl_state, sim.state)
 
     # Simulation Step
-    for i in range(1, 11):
-        # Check landing
-        if sim.state.r - cfg.r_moon < 0 or t > t_max:
-            landing = False
-        sim.step(dt / 10, ctrl_state)
+    if sim.state.r - cfg.r_moon < 0 or t > t_max:
+        landing = False
+    sim.step(dt, ctrl_state)
 
     t += dt
 end = time.time()
