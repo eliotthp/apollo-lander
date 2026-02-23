@@ -176,6 +176,7 @@ axs[1, 2].set_title("Error between radar and true z-quantities vs. Time | Filter
 axs[1, 2].legend()
 axs[1, 2].grid(True)
 axs[1, 2].plot()
+plt.savefig("figs/telemetry.png")
 plt.show()
 
 # Calculate RMS
@@ -184,5 +185,3 @@ rms_dr = np.sqrt(np.mean((dr_array - dz_array) ** 2))
 
 print(f"RMS Error in Position: {rms_r:.5f} m")
 print(f"RMS Error in Velocity: {rms_dr:.5f} m/s")
-
-plt.savefig("figs/telemetry.png")
