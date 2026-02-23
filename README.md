@@ -118,16 +118,6 @@ Commands are held constant between control updates.
 
 ---
 
-## Multi-Rate Execution
-
-- Guidance & Control: 10 Hz  
-- Plant Integration: 100 Hz  
-- Commands held constant between control cycles  
-
-This structure reflects rate-partitioned flight software execution.
-
----
-
 ## Telemetry
 
 ### Descent Telemetry
