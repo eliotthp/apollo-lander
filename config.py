@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from states import PolarState
+from states import PolarState, ControlState
 import numpy as np
 
 
@@ -14,6 +14,7 @@ class Config:
     dalpha_max: float
     G_earth: float
     S0: PolarState
+    C0: ControlState
 
 
 # --- Lunar Environment Constants ---
@@ -41,4 +42,6 @@ S0 = PolarState(
     m=m0,
 )
 
-cfg = Config(mu, r_moon, m0, m_empty, T_max, Isp, dalpha_max, G_earth, S0)
+C0 = ControlState(0, -np.pi / 2, 0, -np.pi / 2)
+
+cfg = Config(mu, r_moon, m0, m_empty, T_max, Isp, dalpha_max, G_earth, S0, C0)
