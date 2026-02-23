@@ -130,6 +130,8 @@ Telemetry includes:
 - Vertical and horizontal velocity
 - Commanded vs actual thrust
 - Commanded vs actual pitch angle
+- Propellant mass vs time
+- Error between radar and true z-quantities vs time
 
 ---
 

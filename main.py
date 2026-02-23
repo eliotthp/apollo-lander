@@ -155,8 +155,6 @@ for i in [time_stages[0], time_stages[1]]:
         for ax in ax_row:
             ax.axvline(i, color="k", linestyle="--", alpha=0.5)
 
-plt.savefig("figs/telemetry.png")
-
 r_array = np.array(logger.records["r"])
 dr_array = np.array(logger.records["dr"])
 z_array = np.array(logger.records["z"])
@@ -174,7 +172,7 @@ axs[1, 2].plot(
 )
 axs[1, 2].set_xlabel("Time (s)")
 axs[1, 2].set_ylabel("Error (m)")
-axs[1, 2].set_title("Error between Radar and True z-Quantities over Time | Filtered")
+axs[1, 2].set_title("Error between radar and true z-quantities vs. Time | Filtered")
 axs[1, 2].legend()
 axs[1, 2].grid(True)
 axs[1, 2].plot()
@@ -186,3 +184,5 @@ rms_dr = np.sqrt(np.mean((dr_array - dz_array) ** 2))
 
 print(f"RMS Error in Position: {rms_r:.5f} m")
 print(f"RMS Error in Velocity: {rms_dr:.5f} m/s")
+
+plt.savefig("figs/telemetry.png")
