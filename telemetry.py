@@ -20,6 +20,7 @@ class Logger:
         self.records["m"].append(plr.m)
         self.records["r"].append(plr.r)
         self.records["dr"].append(plr.dr)
+        self.records["theta"].append(plr.theta)
         self.records["z"].append(lvlh.z)
         self.records["dz"].append(lvlh.dz)
         self.records["x"].append(lvlh.x)
@@ -37,22 +38,33 @@ class Logger:
                 time_stages.append(self.records["t"][i])
         return time_stages
 
-    def output_stats(self, t: float, start: float, end: float, sim: PolarState):
-        real_t = end - start
+    def output_stats(self, t: float, t_elapsed: float, sim: PolarState):
         delta_V = cfg.Isp * cfg.G_earth * np.log(cfg.m0 / sim.m)
 
         # --- Printing Results ---
         print("--- Results ---")
         print(f"Time: {t:.2f} s")
-        print(f"Real Time: {real_t:.2f} s")
-        print(f"Effective sim speed (x real time) {t / real_t:.2f}")
+        print(f"Real Time: {t_elapsed:.2f} s")
+        print(f"Effective sim speed (x real time) {t / t_elapsed:.2f}")
         print(f"Final Altitude: {sim.r - cfg.r_moon:.2f} m")
         v_final = np.sqrt(sim.dr**2 + (sim.dtheta * sim.r) ** 2)
         print(f"Final Velocity: {v_final:.2f} m/s")
         print(f"Delta-V: {delta_V:.2f} m/s")
         print(f"--- Safe Landing: {v_final < 5} ---")
 
-    def plot(self):
+    def plot_trajectory(self):
+        plt.plot(np.rad2deg(self.records["theta"]), self.records["z"])
+        plt.xlabel("Theta (rad)")
+        plt.ylabel("Altitude (m)")
+        plt.grid(True)
+        plt.show()
+
+    def plot_telemetry(self):
+        r_array = np.array(self.records["r"])
+        dr_array = np.array(self.records["dr"])
+        z_array = np.array(self.records["z"])
+        dz_array = np.array(self.records["dz"])
+
         # --- Plotting ---
         fig, axs = plt.subplots(2, 3, figsize=(16, 8))
         fig.suptitle("Descent Simulation Telemetry")
@@ -123,11 +135,6 @@ class Logger:
             for ax_row in axs:
                 for ax in ax_row:
                     ax.axvline(i, color="k", linestyle="--", alpha=0.5)
-
-        r_array = np.array(self.records["r"])
-        dr_array = np.array(self.records["dr"])
-        z_array = np.array(self.records["z"])
-        dz_array = np.array(self.records["dz"])
 
         axs[1, 2].plot(
             self.records["t"],

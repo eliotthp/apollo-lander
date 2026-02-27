@@ -31,14 +31,14 @@ m_empty = 7_201  # Dry mass of the vehicle (kg)
 m_prop0 = 8_134  # Initial propellant mass (kg)
 m0 = m_prop0 + m_empty  # Total initial wet mass (kg)
 alpha0 = 0  # Initial pitch angle (rad)
-dalpha_max = 0.10472  # Maximum gimbal/slew rate (rad/s) (~6 deg/s)
+dalpha_max = np.deg2rad(6)  # Maximum gimbal/slew rate (rad/s)
 
 # --- Lunar Module (LM) Initial Conditions ---
 S0 = PolarState(
-    r=14_878 + r_moon,
+    r=15_240 + r_moon,
     dr=0,
     theta=0,
-    dtheta=np.sqrt(mu / (r_moon + 14_878)) / (r_moon + 14_878),
+    dtheta=1695.043855 / (15_240 + r_moon),
     m=m0,
 )
 
